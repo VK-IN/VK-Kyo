@@ -1,919 +1,1673 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
  <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Japanese Restaurant Costing System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Kyo — Restaurant Costing System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700;800&amp;family=Noto+Sans+JP:wght@300;400;500;700&amp;family=Zen+Kaku+Gothic+New:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
-html,body{height:100%;margin:0;overflow:hidden}
-*{box-sizing:border-box}
-:root{--bg1:#1a1215;--bg2:#2a1f24;--accent:#c9a96e;--accent2:#e8c98a;--glass:rgba(42,31,36,0.65);--glass2:rgba(201,169,110,0.08);--text:#f0e6d8;--text2:#a89888;--red:#e05555;--green:#6ec98a}
-body{font-family:'DM Sans',Arial,sans-serif;background:var(--bg1);color:var(--text)}
-.font-jp{font-family:'Noto Serif JP',Georgia,serif}
-.glass{background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(201,169,110,0.12)}
-.glass2{background:var(--glass2);backdrop-filter:blur(12px);border:1px solid rgba(201,169,110,0.08)}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#b8944a);color:#1a1215;font-weight:600;border:none;border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;font-family:inherit}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,169,110,0.3)}
-.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-secondary{background:rgba(201,169,110,0.1);color:var(--accent);border:1px solid rgba(201,169,110,0.2);border-radius:10px;padding:10px 22px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
-.btn-secondary:hover{background:rgba(201,169,110,0.18)}
-.btn-danger{background:rgba(224,85,85,0.12);color:var(--red);border:1px solid rgba(224,85,85,0.2);border-radius:10px;padding:8px 16px;cursor:pointer;transition:all .2s;font-weight:500;font-family:inherit}
-.btn-danger:hover{background:rgba(224,85,85,0.25)}
-input,select{background:rgba(255,255,255,0.05);border:1px solid rgba(201,169,110,0.15);color:var(--text);border-radius:8px;padding:10px 14px;font-size:14px;width:100%;transition:border .2s;font-family:inherit}
-input:focus,select:focus{outline:none;border-color:var(--accent)}
-input::placeholder{color:var(--text2)}
-.modal-overlay{position:fixed;inset:0;background:rgba(10,5,8,0.7);backdrop-filter:blur(6px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
-.modal-overlay.active{display:flex}
-.modal-content{background:linear-gradient(160deg,#2a1f24,#1e1518);border:1px solid rgba(201,169,110,0.15);border-radius:20px;width:100%;max-width:640px;max-height:88%;overflow-y:auto;padding:32px;position:relative;animation:modalIn .25s ease}
-@keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
-.tag{display:inline-flex;align-items:center;gap:6px;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.15);border-radius:20px;padding:4px 12px;font-size:12px;color:var(--accent2)}
-.stat-card{border-radius:16px;padding:20px;transition:transform .2s}
-.stat-card:hover{transform:translateY(-2px)}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(201,169,110,0.2);border-radius:3px}
-.nav-btn{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:12px;cursor:pointer;transition:all .2s;border:none;background:transparent;color:var(--text2);font-size:14px;width:100%;font-family:inherit;font-weight:500}
-.nav-btn:hover,.nav-btn.active{background:rgba(201,169,110,0.1);color:var(--accent2)}
-.nav-btn.active{border-left:3px solid var(--accent)}
-.toast{position:fixed;bottom:24px;right:24px;z-index:200;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:500;animation:toastIn .3s ease;pointer-events:none}
-@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-.toast.success{background:rgba(110,201,138,0.15);border:1px solid rgba(110,201,138,0.3);color:var(--green)}
-.toast.error{background:rgba(224,85,85,0.15);border:1px solid rgba(224,85,85,0.3);color:var(--red)}
-.ingredient-row{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(201,169,110,0.06);margin-bottom:6px;transition:background .15s}
-.ingredient-row:hover{background:rgba(201,169,110,0.05)}
-.app-wrapper{display:flex;height:100%;width:100%;overflow:hidden}
-.sidebar{width:240px;min-width:240px;padding:24px 16px;border-right:1px solid rgba(201,169,110,0.1);display:flex;flex-direction:column;gap:4px;background:rgba(26,18,21,0.9)}
-.main-area{flex:1;overflow-y:auto;padding:32px;min-width:0}
-@media(max-width:1024px){.sidebar{width:200px;padding:16px 12px}}
-@media(max-width:768px){.sidebar{display:none}.app-wrapper{flex-direction:column}.main-area{padding:16px;padding-bottom:80px}.stat-card{padding:16px}.dish-card{padding:16px}.grid-cols-2{grid-template-columns:1fr}.grid-cols-3{grid-template-columns:1fr}.lg\:grid-cols-2{grid-template-columns:1fr}.lg\:grid-cols-3{grid-template-columns:1fr}.lg\:grid-cols-4{grid-template-columns:1fr}}
-@media(max-width:480px){.main-area{padding:12px;padding-bottom:80px}.text-2xl{font-size:1.25rem}.text-lg{font-size:1rem}.mb-6{margin-bottom:1rem}.modal-content{padding:20px;max-width:90vw}.stat-card{padding:12px}.dish-card{padding:12px}}
-.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid rgba(201,169,110,0.12);z-index:50;padding:6px;gap:4px}
-@media(max-width:768px){.mobile-nav{display:flex;justify-content:space-around;padding-bottom:env(safe-area-inset-bottom)}}
-.mobile-nav button{display:flex;flex-direction:column;align-items:center;gap:2px;background:transparent;border:none;color:var(--text2);font-size:10px;padding:6px 8px;border-radius:8px;cursor:pointer;font-family:inherit;transition:all .2s}
-.mobile-nav button.active{color:var(--accent2);background:rgba(201,169,110,0.1)}
-.dish-card{border-radius:16px;padding:20px;background:var(--glass);border:1px solid rgba(201,169,110,0.1);transition:all .2s}
-.dish-card:hover{border-color:rgba(201,169,110,0.25)}
-.loading-spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(201,169,110,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-svg{vertical-align:middle}
-.grid{display:grid}
-.grid-cols-1{grid-template-columns:1fr}
-.grid-cols-2{grid-template-columns:repeat(2,1fr)}
-.grid-cols-3{grid-template-columns:repeat(3,1fr)}
-.sm\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
-.lg\:grid-cols-4{grid-template-columns:repeat(4,1fr)}
-.lg\:grid-cols-2{grid-template-columns:repeat(2,1fr)}
-.lg\:grid-cols-3{grid-template-columns:repeat(3,1fr)}
-.gap-4{gap:1rem}
-.gap-2{gap:.5rem}
-.gap-1{gap:.25rem}
-.gap-3{gap:.75rem}
-.flex{display:flex}
-.flex-1{flex:1}
-.flex-wrap{flex-wrap:wrap}
-.items-center{align-items:center}
-.justify-between{justify-content:space-between}
-.mb-1{margin-bottom:.25rem}
-.mb-2{margin-bottom:.5rem}
-.mb-3{margin-bottom:.75rem}
-.mb-4{margin-bottom:1rem}
-.mb-6{margin-bottom:1.5rem}
-.mb-8{margin-bottom:2rem}
-.mt-1{margin-top:.25rem}
-.mt-3{margin-top:.75rem}
-.mt-4{margin-top:1rem}
-.mt-5{margin-top:1.25rem}
-.pt-3{padding-top:.75rem}
-.pt-4{padding-top:1rem}
-.text-xs{font-size:.75rem}
-.text-sm{font-size:.875rem}
-.text-lg{font-size:1.125rem}
-.text-xl{font-size:1.25rem}
-.text-2xl{font-size:1.5rem}
-.font-semibold{font-weight:600}
-.font-bold{font-weight:700}
-.text-right{text-align:right}
-.text-center{text-align:center}
-.w-full{width:100%}
-.min-w-0{min-width:0}
-.ml-2{margin-left:.5rem}
-.inline{display:inline}
-.block{display:block}
-@media(max-width:768px){.sm\:grid-cols-2{grid-template-columns:repeat(2,1fr)}.lg\:grid-cols-4{grid-template-columns:1fr}.lg\:grid-cols-2{grid-template-columns:1fr}.lg\:grid-cols-3{grid-template-columns:1fr}.md\:grid-cols-2{grid-template-columns:1fr}}
-  </style>
+  :root{
+    --ink:#1a1613;
+    --paper:#faf6f0;
+    --washi:#f4ede1;
+    --sumi:#0d0a08;
+    --crimson:#b8322a;
+    --crimson-deep:#7a1f1a;
+    --gold:#c9a35c;
+    --gold-deep:#8a6d2f;
+    --matcha:#556b3d;
+    --indigo:#1e2a47;
+  }
+  html,body{height:100%;width:100%;}
+  body{
+    font-family:'Zen Kaku Gothic New','Noto Sans JP',system-ui,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 800px at 85% -10%, rgba(184,50,42,0.18), transparent 60%),
+      radial-gradient(900px 700px at -10% 110%, rgba(30,42,71,0.22), transparent 60%),
+      radial-gradient(700px 500px at 50% 50%, rgba(201,163,92,0.10), transparent 70%),
+      linear-gradient(180deg,#f8f1e4 0%, #efe5d1 100%);
+    background-attachment: fixed;
+    overflow-x:hidden;
+  }
+  .jp-serif{font-family:'Shippori Mincho', serif;}
+  /* Seigaiha wave pattern overlay */
+  body::before{
+    content:"";
+    position:fixed;inset:0;
+    background-image:
+      radial-gradient(circle at 20px 20px, rgba(30,42,71,0.06) 18px, transparent 19px),
+      radial-gradient(circle at 40px 40px, rgba(30,42,71,0.06) 18px, transparent 19px);
+    background-size:40px 40px, 40px 40px;
+    background-position:0 0, 20px 20px;
+    opacity:.4;
+    pointer-events:none;
+    z-index:0;
+  }
+  /* Glass cards */
+  .glass{
+    background: rgba(255,253,248,0.55);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.6);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.7) inset,
+      0 20px 60px -20px rgba(30,20,10,0.25);
+  }
+  .glass-dark{
+    background: linear-gradient(160deg, rgba(26,22,19,0.92), rgba(13,10,8,0.88));
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(201,163,92,0.25);
+  }
+  .hairline{ border:1px solid rgba(26,22,19,0.08); }
+  .stamp{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:44px;height:44px;border-radius:8px;
+    background:linear-gradient(135deg,#b8322a,#7a1f1a);
+    color:#faf6f0;font-family:'Shippori Mincho',serif;font-weight:800;
+    box-shadow: 0 6px 18px -6px rgba(184,50,42,0.6), inset 0 0 0 2px rgba(255,255,255,0.12);
+    letter-spacing:-1px;
+  }
+  .btn{
+    display:inline-flex;align-items:center;gap:.5rem;
+    padding:.65rem 1.05rem;border-radius:10px;
+    font-weight:600;font-size:.875rem;
+    transition:transform .15s ease, box-shadow .2s ease, background .2s ease;
+    white-space:nowrap;
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn:active{ transform: translateY(0); }
+  .btn-primary{ background:var(--ink); color:var(--paper); box-shadow:0 8px 24px -10px rgba(0,0,0,.45); }
+  .btn-primary:hover{ background:#000; box-shadow:0 12px 28px -10px rgba(0,0,0,.55); }
+  .btn-crimson{ background:linear-gradient(135deg,#b8322a,#8a231d); color:#faf6f0; box-shadow:0 10px 26px -12px rgba(184,50,42,.7); }
+  .btn-gold{ background:linear-gradient(135deg,#d4b373,#a8853f); color:#1a1613; box-shadow:0 10px 26px -12px rgba(168,133,63,.7); }
+  .btn-ghost{ background:rgba(26,22,19,0.05); color:var(--ink); border:1px solid rgba(26,22,19,0.08); }
+  .btn-ghost:hover{ background:rgba(26,22,19,0.09); }
+  .chip{
+    display:inline-flex;align-items:center;gap:.35rem;
+    padding:.2rem .55rem;border-radius:999px;font-size:.72rem;font-weight:600;
+    background:rgba(26,22,19,0.06); color:var(--ink);
+  }
+  .field{
+    width:100%;padding:.7rem .85rem;border-radius:10px;
+    background:rgba(255,255,255,0.75);
+    border:1px solid rgba(26,22,19,0.12);
+    font-size:.9rem; color:var(--ink);
+    transition:border-color .15s, box-shadow .15s, background .15s;
+  }
+  .field:focus{ outline:none; border-color:var(--ink); box-shadow:0 0 0 3px rgba(26,22,19,0.08); background:#fff;}
+  .label{ font-size:.78rem; font-weight:600; color:#5a4f44; letter-spacing:.02em; }
+
+  /* Module card */
+  .mod-card{
+    position:relative; overflow:hidden;
+    border-radius:18px; padding:1.25rem;
+    transition: transform .25s ease, box-shadow .25s ease;
+    cursor:pointer;
+  }
+  .mod-card:hover{ transform: translateY(-4px); box-shadow: 0 30px 60px -30px rgba(30,20,10,0.4); }
+  .mod-card .kanji{
+    position:absolute; right:-8px; top:-18px;
+    font-family:'Shippori Mincho',serif;
+    font-size:6rem; line-height:1; font-weight:800;
+    color:rgba(26,22,19,0.05);
+    user-select:none; pointer-events:none;
+  }
+
+  /* Modal */
+  .modal-backdrop{
+    position:fixed; inset:0; z-index:60;
+    background: rgba(20,14,8,0.55);
+    backdrop-filter: blur(8px);
+    display:none; align-items:center; justify-content:center;
+    padding:1rem;
+    animation: fadeIn .18s ease;
+  }
+  .modal-backdrop.open{ display:flex; }
+  .modal{
+    width:100%; max-width: 960px; max-height: 92%;
+    background: linear-gradient(180deg,#fffdf8 0%, #f6eedc 100%);
+    border-radius: 20px;
+    border: 1px solid rgba(201,163,92,0.35);
+    box-shadow: 0 40px 100px -20px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display:flex; flex-direction:column;
+    animation: pop .22s cubic-bezier(.2,.9,.3,1.1);
+  }
+  .modal-head{
+    padding: 1rem 1.25rem;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom: 1px solid rgba(26,22,19,0.08);
+    background: linear-gradient(180deg, rgba(184,50,42,0.06), transparent);
+  }
+  .modal-body{ padding: 1.25rem; overflow-y:auto; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes pop { from{opacity:0; transform: scale(.96) translateY(10px)} to{opacity:1; transform: scale(1) translateY(0)} }
+
+  /* Table */
+  .tbl{ width:100%; border-collapse:separate; border-spacing:0; font-size:.875rem; }
+  .tbl th{
+    text-align:left; padding:.65rem .75rem; font-weight:700; color:#5a4f44;
+    border-bottom:1px solid rgba(26,22,19,0.1); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase;
+    background: rgba(255,255,255,0.4);
+    position:sticky; top:0; backdrop-filter: blur(6px);
+  }
+  .tbl td{ padding:.7rem .75rem; border-bottom:1px solid rgba(26,22,19,0.06); vertical-align:middle; }
+  .tbl tr:hover td{ background: rgba(201,163,92,0.06); }
+
+  /* Toast */
+  .toast-wrap{ position:fixed; top:1rem; right:1rem; z-index:100; display:flex; flex-direction:column; gap:.5rem; max-width:92%; }
+  .toast{
+    padding:.75rem 1rem; border-radius:12px; font-size:.85rem; font-weight:500;
+    background: rgba(26,22,19,0.95); color:#faf6f0;
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.5);
+    animation: slideIn .25s ease; display:flex; align-items:center; gap:.5rem;
+    border-left:3px solid var(--gold);
+  }
+  .toast.ok{ border-left-color:#6fa650; }
+  .toast.err{ border-left-color:#d14a3f; }
+  @keyframes slideIn { from{opacity:0; transform:translateX(20px)} to{opacity:1; transform:translateX(0)} }
+
+  /* Loader */
+  .spinner{
+    width:18px;height:18px;border-radius:50%;
+    border:2px solid rgba(26,22,19,0.15);
+    border-top-color: var(--crimson);
+    animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* Vertical title */
+  .vtitle{
+    writing-mode: vertical-rl;
+    font-family:'Shippori Mincho',serif;
+    letter-spacing: .5em;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{ width:10px; height:10px; }
+  ::-webkit-scrollbar-thumb{ background: rgba(26,22,19,0.2); border-radius:10px; }
+  ::-webkit-scrollbar-thumb:hover{ background: rgba(26,22,19,0.35); }
+
+  /* Tabs */
+  .tab-btn{
+    padding:.55rem .9rem; border-radius:999px; font-size:.82rem; font-weight:600;
+    color:#5a4f44; background: rgba(26,22,19,0.05); border:1px solid transparent;
+    transition: all .15s;
+  }
+  .tab-btn.active{ background: var(--ink); color: var(--paper); }
+
+  /* KPI stat */
+  .stat-num{ font-family:'Shippori Mincho', serif; font-weight:800; letter-spacing:-.02em; }
+
+  /* Responsive */
+  @media (max-width: 640px){
+    .mod-card .kanji{ font-size:4.5rem; top:-12px;}
+    .modal{ border-radius: 14px; }
+    .modal-body{ padding: 1rem; }
+    .tbl th, .tbl td{ padding:.55rem .5rem; font-size:.8rem;}
+  }
+
+  /* AI panel */
+  .ai-msg-user{ background: var(--ink); color: var(--paper); }
+  .ai-msg-bot{ background: rgba(255,253,248,0.85); border:1px solid rgba(26,22,19,0.08); }
+
+  /* Gradient text */
+  .grad-text{
+    background: linear-gradient(135deg,#1a1613 0%, #b8322a 50%, #8a6d2f 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+
+  /* Firebase badge */
+  .fb-dot{width:8px;height:8px;border-radius:50%;}
+  .fb-on{ background:#6fa650; box-shadow:0 0 10px #6fa650; }
+  .fb-off{ background:#d14a3f; }
+  .fb-load{ background:#c9a35c; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+</style>
   <style>body { box-sizing: border-box; }</style>
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
-  <script src="https://cdn.tailwindcss.com/3.4.17" type="text/javascript"></script>
   <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
   <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
  </head>
  <body class="h-full">
-  <div class="app-wrapper" id="app">
-   <!-- Sidebar -->
-   <aside class="sidebar">
-    <div class="mb-8">
-     <div class="font-jp text-lg font-semibold" style="color:var(--accent2)" id="brandTitle">
-      KYO
-     </div>
-     <div class="text-xs mt-1" style="color:var(--text2)">
-      Costing System
-     </div>
-    </div><button class="nav-btn active" data-nav="dashboard" onclick="switchTab('dashboard')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-     </svg> Dashboard</button> <button class="nav-btn" data-nav="ingredients" onclick="switchTab('ingredients')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="4" /><path d="M3 5v14a9 4 0 0 0 18 0V5" />
-     </svg> Ingredients</button> <button class="nav-btn" data-nav="recipes" onclick="switchTab('recipes')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13h12M8 13V8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v5M8 20h8" />
-     </svg> Recipes</button> <button class="nav-btn" data-nav="expenses" onclick="switchTab('expenses')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16v18H4z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="16" y2="15" />
-     </svg> Expenses</button> <button class="nav-btn" data-nav="settings" onclick="switchTab('settings')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /><path d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6m-17.78 7.78l4.24-4.24m5.08-5.08l4.24-4.24" />
-     </svg> Settings</button> <button class="nav-btn" data-nav="analytics" onclick="switchTab('analytics')">
-     <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="10" x2="5" y2="19" /><line x1="19" y1="3" x2="19" y2="19" />
-     </svg> Analytics</button>
-   </aside><!-- Main Content -->
-   <main class="main-area" id="mainContent">
-    <!-- DASHBOARD TAB -->
-    <section id="tab-dashboard">
-     <h1 class="font-jp text-2xl font-semibold mb-1" style="color:var(--accent2)">Dashboard</h1>
-     <p class="text-sm mb-6" style="color:var(--text2)">Overview of your restaurant costing</p><!-- Top Row: Settings + Summary Cards -->
-     <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;margin-bottom:24px;align-items:start">
-      <!-- Settings Panel -->
-      <div class="glass" style="border-radius:16px;padding:20px;display:grid;gap:12px;width:280px;flex-shrink:0">
-       <div><label class="block text-xs mb-2" style="color:var(--text2)">Monthly Plates</label> <input type="number" id="dashPlates" min="1" value="500" style="font-size:14px">
+  <div class="relative z-10 w-full" style="min-height:100%;">
+   <!-- Header -->
+   <header class="w-full px-4 sm:px-6 lg:px-10 pt-5 pb-4 sticky top-0 z-30" style="backdrop-filter: blur(14px); background: linear-gradient(180deg, rgba(248,241,228,0.85), rgba(248,241,228,0.55));">
+    <div class="max-w-[1400px] mx-auto flex items-center justify-between gap-3">
+     <div class="flex items-center gap-3">
+      <div class="stamp">
+       京
+      </div>
+      <div class="leading-tight">
+       <div class="flex items-center gap-2">
+        <h1 class="jp-serif text-lg sm:text-xl font-bold tracking-tight">Kyo <span class="text-[color:var(--crimson)]">·</span> 京</h1><span class="chip hidden sm:inline-flex"><i data-lucide="sparkles" class="w-3 h-3"></i>Costing System</span>
        </div>
-       <div><label class="block text-xs mb-2" style="color:var(--text2)">Profit Margin (%)</label> <input type="number" id="dashMargin" min="0" max="200" value="30" style="font-size:14px">
-       </div><button class="btn-primary" onclick="saveDashboardSettings()" style="width:100%;padding:10px;font-size:13px">Update Settings</button>
-      </div><!-- Summary Cards Grid -->
-      <div class="grid gap-4" id="statCards" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
-       <div class="stat-card glass">
-        <div class="text-xs mb-2" style="color:var(--text2)">
-         Ingredients
-        </div>
-        <div class="text-2xl font-bold" id="statIngredients">
-         0
-        </div>
-       </div>
-       <div class="stat-card glass">
-        <div class="text-xs mb-2" style="color:var(--text2)">
-         Dishes
-        </div>
-        <div class="text-2xl font-bold" id="statDishes">
-         0
-        </div>
-       </div>
-       <div class="stat-card glass">
-        <div class="text-xs mb-2" style="color:var(--text2)">
-         Monthly Expenses
-        </div>
-        <div class="text-2xl font-bold" id="statExpenses">
-         LKR 0
-        </div>
-       </div>
-       <div class="stat-card glass">
-        <div class="text-xs mb-2" style="color:var(--text2)">
-         Avg Profit/Dish
-        </div>
-        <div class="text-2xl font-bold" style="color:var(--green)" id="statProfit">
-         LKR 0
-        </div>
+       <div class="text-[11px] sm:text-xs text-[color:var(--ink)]/60">
+        Japanese Restaurant Management · Credit by VK
        </div>
       </div>
-     </div><!-- Dishes Section -->
-     <h2 class="font-jp text-lg font-semibold mb-4" style="color:var(--accent2)">Dish Pricing Overview</h2>
-     <div id="dashboardDishes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:24px">
-      <div class="text-sm" style="color:var(--text2)">
-       No dishes yet. Add ingredients, recipes, and expenses to see pricing.
-      </div>
-     </div><!-- Export Buttons -->
-     <div class="flex gap-3 flex-wrap">
-      <button class="btn-secondary" onclick="exportPDF()">
-       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="13" x2="12" y2="17" /><line x1="9" y1="15" x2="15" y2="15" />
-       </svg> Export PDF</button> <button class="btn-secondary" onclick="exportCSV()">
-       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><path d="M9 3H5a2 2 0 0 0-2 2v4m0 0H3m6 0h6m0 0h6m0 0v4a2 2 0 0 1-2 2h-4m0 0v6m0 0H9m0 0H5a2 2 0 0 1-2-2v-4m6 0h6" />
-       </svg> Export CSV</button>
      </div>
-    </section><!-- INGREDIENTS TAB -->
-    <section id="tab-ingredients" style="display:none">
-     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <div>
-       <h1 class="font-jp text-2xl font-semibold" style="color:var(--accent2)">Ingredients</h1>
-       <p class="text-sm" style="color:var(--text2)">Manage your ingredient inventory</p>
-      </div><button class="btn-primary" onclick="openModal('ingredientModal')">
-       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-       </svg> Add Ingredient</button>
+     <div class="flex items-center gap-2">
+      <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-xs">
+       <span id="fbDot" class="fb-dot fb-load"></span> <span id="fbText" class="font-medium">Connecting…</span>
+      </div><button onclick="openModal('aiModal')" class="btn btn-ghost"> <i data-lucide="bot" class="w-4 h-4"></i><span class="hidden sm:inline">AI Assistant</span> </button> <button onclick="openModal('exportModal')" class="btn btn-primary"> <i data-lucide="download" class="w-4 h-4"></i><span class="hidden sm:inline">Export</span> </button>
      </div>
-     <div id="ingredientsList"></div>
-    </section><!-- RECIPES TAB -->
-    <section id="tab-recipes" style="display:none">
-     <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-      <div>
-       <h1 class="font-jp text-2xl font-semibold" style="color:var(--accent2)">Recipes</h1>
-       <p class="text-sm" style="color:var(--text2)">Create dishes and calculate costs</p>
-      </div><button class="btn-primary" onclick="openRecipeModal()">
-       <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;margin-right:6px"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-       </svg> New Dish</button>
-     </div>
-     <div id="recipesList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem"></div>
-    </section><!-- EXPENSES TAB -->
-    <section id="tab-expenses" style="display:none">
-     <h1 class="font-jp text-2xl font-semibold mb-1" style="color:var(--accent2)">Monthly Expenses</h1>
-     <p class="text-sm mb-6" style="color:var(--text2)">Track your fixed monthly costs</p>
-     <div class="glass" style="border-radius:16px;padding:28px;max-width:500px">
-      <div class="grid gap-4">
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Rent (LKR)</label><input type="number" id="expRent" placeholder="0" min="0">
-       </div>
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Salary (LKR)</label><input type="number" id="expSalary" placeholder="0" min="0">
-       </div>
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Gas (LKR)</label><input type="number" id="expGas" placeholder="0" min="0">
-       </div>
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Electricity (LKR)</label><input type="number" id="expElectricity" placeholder="0" min="0">
-       </div>
-      </div>
-      <div class="mt-4 pt-3" style="border-top:1px solid rgba(201,169,110,0.1)">
-       <div class="flex justify-between text-sm"><span style="color:var(--text2)">Total Monthly</span><span class="font-bold" id="expTotal" style="color:var(--accent2)">LKR 0</span>
-       </div>
-      </div><button class="btn-primary mt-5 w-full" id="saveExpBtn" onclick="saveExpenses()">Save Expenses</button>
-     </div>
-    </section><!-- SETTINGS TAB -->
-    <section id="tab-settings" style="display:none">
-     <h1 class="font-jp text-2xl font-semibold mb-1" style="color:var(--accent2)">Settings</h1>
-     <p class="text-sm mb-6" style="color:var(--text2)">Configure costing parameters</p>
-     <div class="glass" style="border-radius:16px;padding:28px;max-width:500px">
-      <div class="grid gap-4">
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Expected Plates Sold / Month</label><input type="number" id="setPlates" placeholder="500" min="1">
-       </div>
-       <div><label class="block text-xs mb-1" style="color:var(--text2)">Profit Margin (%)</label><input type="number" id="setMargin" placeholder="30" min="0" max="200">
-       </div>
-      </div><button class="btn-primary mt-5 w-full" id="saveSetBtn" onclick="saveSettings()">Save Settings</button>
-     </div>
-    </section><!-- ANALYTICS TAB -->
-    <section id="tab-analytics" style="display:none">
-     <h1 class="font-jp text-2xl font-semibold mb-1" style="color:var(--accent2)">Analytics</h1>
-     <p class="text-sm mb-6" style="color:var(--text2)">Profit analysis per dish</p>
-     <div id="analyticsContent"></div>
-    </section>
-   </main>
-  </div><!-- Mobile Nav -->
-  <nav class="mobile-nav">
-   <button data-nav="dashboard" onclick="switchTab('dashboard')">
-    <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-    </svg>Home</button> <button data-nav="ingredients" onclick="switchTab('ingredients')">
-    <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="4" /><path d="M3 5v14a9 4 0 0 0 18 0V5" />
-    </svg>Items</button> <button data-nav="recipes" onclick="switchTab('recipes')">
-    <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 13h12M8 13V8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v5M8 20h8" />
-    </svg>Dishes</button> <button data-nav="expenses" onclick="switchTab('expenses')">
-    <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 3h16v18H4z" /><line x1="8" y1="7" x2="16" y2="7" /><line x1="8" y1="11" x2="16" y2="11" /><line x1="8" y1="15" x2="16" y2="15" />
-    </svg>Costs</button> <button data-nav="analytics" onclick="switchTab('analytics')">
-    <svg width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="10" x2="5" y2="19" /><line x1="19" y1="3" x2="19" y2="19" />
-    </svg>Stats</button>
-  </nav><!-- INGREDIENT MODAL -->
-  <div class="modal-overlay" id="ingredientModal">
-   <div class="modal-content">
-    <div class="flex justify-between items-center mb-6">
-     <h2 class="font-jp text-xl font-semibold" style="color:var(--accent2)">Add Ingredient</h2><button onclick="closeModal('ingredientModal')" style="background:none;border:none;color:var(--text2);cursor:pointer;padding:0">
-      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-      </svg></button>
     </div>
-    <form onsubmit="addIngredient(event)">
-     <div class="grid gap-4">
-      <div><label class="block text-xs mb-1" style="color:var(--text2)">Ingredient Name</label><input type="text" id="ingName" placeholder="e.g. Soy Sauce" required>
+   </header><!-- Hero / KPIs -->
+   <section class="w-full px-4 sm:px-6 lg:px-10 pt-2">
+    <div class="max-w-[1400px] mx-auto">
+     <div class="glass rounded-2xl p-5 sm:p-7 relative overflow-hidden">
+      <div class="absolute -right-8 -top-6 jp-serif text-[7rem] sm:text-[10rem] leading-none font-extrabold text-[color:var(--ink)]/5 select-none pointer-events-none">
+       料理
       </div>
-      <div><label class="block text-xs mb-1" style="color:var(--text2)">Unit</label><input type="text" id="ingUnit" placeholder="e.g. ml, g, piece" required>
+      <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 relative">
+       <div>
+        <div class="text-xs uppercase tracking-[0.3em] text-[color:var(--crimson)] font-bold">
+         Omakase Dashboard
+        </div>
+        <h2 class="jp-serif text-2xl sm:text-4xl font-bold mt-2 grad-text">Precision Costing, Crafted Like Sushi.</h2>
+        <p class="text-sm text-[color:var(--ink)]/70 max-w-xl mt-2">Manage ingredients, build recipes, calculate true plate cost including overhead, and price every dish with the exact margin you want — all in Sri Lankan Rupees (LKR).</p>
+       </div>
+       <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 w-full lg:w-auto">
+        <div class="glass rounded-xl p-3 sm:p-4">
+         <div class="text-[10px] sm:text-xs text-[color:var(--ink)]/60 uppercase tracking-wider">
+          Ingredients
+         </div>
+         <div class="stat-num text-xl sm:text-2xl" id="kpiIngredients">
+          0
+         </div>
+        </div>
+        <div class="glass rounded-xl p-3 sm:p-4">
+         <div class="text-[10px] sm:text-xs text-[color:var(--ink)]/60 uppercase tracking-wider">
+          Dishes
+         </div>
+         <div class="stat-num text-xl sm:text-2xl" id="kpiDishes">
+          0
+         </div>
+        </div>
+        <div class="glass rounded-xl p-3 sm:p-4">
+         <div class="text-[10px] sm:text-xs text-[color:var(--ink)]/60 uppercase tracking-wider">
+          Overhead / Plate
+         </div>
+         <div class="stat-num text-xl sm:text-2xl text-[color:var(--crimson)]" id="kpiOverhead">
+          LKR 0
+         </div>
+        </div>
+        <div class="glass rounded-xl p-3 sm:p-4">
+         <div class="text-[10px] sm:text-xs text-[color:var(--ink)]/60 uppercase tracking-wider">
+          Margin
+         </div>
+         <div class="stat-num text-xl sm:text-2xl text-[color:var(--matcha)]" id="kpiMargin">
+          0%
+         </div>
+        </div>
+       </div>
       </div>
-      <div><label class="block text-xs mb-1" style="color:var(--text2)">Unit Price (LKR)</label><input type="number" id="ingPrice" placeholder="0" min="0" step="0.01" required>
-      </div>
-     </div><button type="submit" class="btn-primary mt-5 w-full" id="addIngBtn">Add Ingredient</button>
-    </form>
-   </div>
-  </div><!-- RECIPE MODAL -->
-  <div class="modal-overlay" id="recipeModal">
-   <div class="modal-content">
-    <div class="flex justify-between items-center mb-6">
-     <h2 class="font-jp text-xl font-semibold" style="color:var(--accent2)" id="recipeModalTitle">New Dish</h2><button onclick="closeModal('recipeModal')" style="background:none;border:none;color:var(--text2);cursor:pointer;padding:0">
-      <svg width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-      </svg></button>
+     </div>
     </div>
-    <form onsubmit="saveRecipe(event)">
-     <div class="mb-4"><label class="block text-xs mb-1" style="color:var(--text2)">Dish Name</label><input type="text" id="dishName" placeholder="e.g. Salmon Sashimi" required>
+   </section><!-- Modules -->
+   <section class="w-full px-4 sm:px-6 lg:px-10 pt-6">
+    <div class="max-w-[1400px] mx-auto">
+     <div class="flex items-center justify-between mb-3">
+      <h3 class="jp-serif text-lg sm:text-xl font-bold">Modules <span class="text-[color:var(--ink)]/40 text-sm font-normal">· メニュー</span></h3>
      </div>
-     <div class="mb-3 flex justify-between items-center">
-      <span class="text-sm font-semibold" style="color:var(--text2)">Ingredients</span> <button type="button" class="btn-secondary" style="padding:6px 14px;font-size:13px" onclick="addRecipeIngRow()">+ Add</button>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <!-- Ingredients --> <button class="mod-card glass text-left" onclick="openModal('ingredientModal')"> <span class="kanji">材</span>
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[color:var(--crimson)]/10 text-[color:var(--crimson)]"><i data-lucide="leaf" class="w-5 h-5"></i>
+       </div>
+       <div class="mt-4 jp-serif font-bold text-lg">
+        Ingredients
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Unit prices &amp; stock
+       </div></button> <!-- Recipes --> <button class="mod-card glass text-left" onclick="openModal('recipeModal')"> <span class="kanji">皿</span>
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[color:var(--indigo)]/10 text-[color:var(--indigo)]"><i data-lucide="chef-hat" class="w-5 h-5"></i>
+       </div>
+       <div class="mt-4 jp-serif font-bold text-lg">
+        Recipes
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Build dishes &amp; cost
+       </div></button> <!-- Expenses --> <button class="mod-card glass text-left" onclick="openModal('expenseModal')"> <span class="kanji">費</span>
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[color:var(--matcha)]/15 text-[color:var(--matcha)]"><i data-lucide="receipt" class="w-5 h-5"></i>
+       </div>
+       <div class="mt-4 jp-serif font-bold text-lg">
+        Expenses
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Rent · Salary · Utilities
+       </div></button> <!-- Settings --> <button class="mod-card glass text-left" onclick="openModal('settingsModal')"> <span class="kanji">設</span>
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[color:var(--gold-deep)]/15 text-[color:var(--gold-deep)]"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+       </div>
+       <div class="mt-4 jp-serif font-bold text-lg">
+        Settings
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Plates &amp; margin %
+       </div></button> <!-- Analytics --> <button class="mod-card glass text-left" onclick="openModal('analyticsModal')"> <span class="kanji">析</span>
+       <div class="w-11 h-11 rounded-xl flex items-center justify-center bg-[color:var(--ink)]/10 text-[color:var(--ink)]"><i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+       </div>
+       <div class="mt-4 jp-serif font-bold text-lg">
+        Analytics
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Profit per dish
+       </div></button>
      </div>
-     <div id="recipeIngredients"></div>
-     <div class="mt-3 pt-3 flex justify-between text-sm" style="border-top:1px solid rgba(201,169,110,0.1)">
-      <span style="color:var(--text2)">Estimated Recipe Cost</span> <span class="font-bold" style="color:var(--accent2)" id="recipeCostPreview">LKR0</span>
-     </div><input type="hidden" id="editRecipeId" value=""> <button type="submit" class="btn-primary mt-5 w-full" id="saveRecipeBtn">Save Dish</button>
-    </form>
+    </div>
+   </section><!-- Dish Preview Table -->
+   <section class="w-full px-4 sm:px-6 lg:px-10 py-6">
+    <div class="max-w-[1400px] mx-auto">
+     <div class="glass rounded-2xl p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+       <div>
+        <h3 class="jp-serif text-lg sm:text-xl font-bold">Menu Pricing Overview</h3>
+        <div class="text-xs text-[color:var(--ink)]/60">
+         Live calculated from ingredients, expenses &amp; settings
+        </div>
+       </div>
+       <div class="flex flex-wrap gap-2">
+        <button onclick="openModal('recipeModal')" class="btn btn-ghost"><i data-lucide="plus" class="w-4 h-4"></i>Add Dish</button> <button onclick="exportPDF()" class="btn btn-crimson"><i data-lucide="file-text" class="w-4 h-4"></i>PDF</button> <button onclick="exportExcel()" class="btn btn-gold"><i data-lucide="sheet" class="w-4 h-4"></i>Excel</button>
+       </div>
+      </div>
+      <div class="overflow-x-auto rounded-xl hairline">
+       <table class="tbl min-w-[720px]">
+        <thead>
+         <tr>
+          <th>#</th>
+          <th>Dish</th>
+          <th>Ingredient Cost</th>
+          <th>Overhead</th>
+          <th>Final Cost</th>
+          <th>Sell Price</th>
+          <th>Profit</th>
+         </tr>
+        </thead>
+        <tbody id="overviewBody">
+         <tr>
+          <td colspan="7" class="text-center text-[color:var(--ink)]/50 py-8">No dishes yet. Create your first dish.</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+   </section><!-- Footer -->
+   <footer class="w-full px-4 sm:px-6 lg:px-10 pb-8">
+    <div class="max-w-[1400px] mx-auto text-center text-xs text-[color:var(--ink)]/50">
+     © <span id="year"></span> Kyo Restaurant Costing · Credit by VK · Generated by Restaurant Costing System
+    </div>
+   </footer>
+  </div><!-- ================= MODALS ================= --> <!-- Ingredient Modal -->
+  <div class="modal-backdrop" id="ingredientModal">
+   <div class="modal">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--crimson)]/10 text-[color:var(--crimson)]"><i data-lucide="leaf" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Ingredient Management <span class="text-[color:var(--ink)]/40 text-sm font-normal">材料</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Add ingredients with unit prices (LKR)
+       </div>
+      </div>
+     </div><button onclick="closeModal('ingredientModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <form id="ingredientForm" class="grid grid-cols-1 sm:grid-cols-12 gap-3 mb-4">
+      <div class="sm:col-span-5">
+       <div class="label mb-1">
+        Ingredient Name
+       </div><input id="ingName" type="text" class="field" placeholder="e.g. Salmon, Nori, Rice Vinegar" required>
+      </div>
+      <div class="sm:col-span-3">
+       <div class="label mb-1">
+        Unit
+       </div><select id="ingUnit" class="field"> <option>kg</option><option>g</option><option>L</option><option>ml</option><option>pcs</option><option>pack</option> </select>
+      </div>
+      <div class="sm:col-span-3">
+       <div class="label mb-1">
+        Unit Price (LKR)
+       </div><input id="ingPrice" type="number" step="0.01" min="0" class="field" placeholder="0.00" required>
+      </div>
+      <div class="sm:col-span-1 flex items-end">
+       <button type="submit" class="btn btn-primary w-full justify-center" id="ingSubmitBtn"> <i data-lucide="plus" class="w-4 h-4"></i> </button>
+      </div>
+     </form>
+     <div class="overflow-x-auto rounded-xl hairline">
+      <table class="tbl min-w-[500px]">
+       <thead>
+        <tr>
+         <th>Name</th>
+         <th>Unit</th>
+         <th>Price (LKR)</th>
+         <th class="text-right">Actions</th>
+        </tr>
+       </thead>
+       <tbody id="ingredientList"></tbody>
+      </table>
+     </div>
+    </div>
    </div>
-  </div><!-- TOAST CONTAINER -->
-  <div id="toastContainer"></div>
+  </div><!-- Recipe Modal -->
+  <div class="modal-backdrop" id="recipeModal">
+   <div class="modal" style="max-width:1080px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--indigo)]/10 text-[color:var(--indigo)]"><i data-lucide="chef-hat" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Recipes &amp; Dishes <span class="text-[color:var(--ink)]/40 text-sm font-normal">料理</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Build dishes and auto calculate cost
+       </div>
+      </div>
+     </div><button onclick="closeModal('recipeModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+      <!-- Builder -->
+      <div class="lg:col-span-3 glass rounded-xl p-4">
+       <div class="flex items-center justify-between mb-3">
+        <div class="jp-serif font-bold">
+         Recipe Builder
+        </div><button type="button" onclick="resetRecipeForm()" class="btn btn-ghost text-xs"><i data-lucide="rotate-ccw" class="w-3 h-3"></i>New</button>
+       </div>
+       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+         <div class="label mb-1">
+          Dish Name
+         </div><input id="dishName" type="text" class="field" placeholder="e.g. Salmon Nigiri">
+        </div>
+        <div>
+         <div class="label mb-1">
+          Category
+         </div><select id="dishCategory" class="field"> <option value="Sushi">Sushi</option> <option value="Sashimi">Sashimi</option> <option value="Ramen">Ramen</option> <option value="Donburi">Donburi</option> <option value="Tempura">Tempura</option> <option value="Appetizer">Appetizer</option> <option value="Dessert">Dessert</option> <option value="Beverage">Beverage</option> <option value="Other">Other</option> </select>
+        </div>
+       </div>
+       <div class="mt-4">
+        <div class="flex items-center justify-between mb-2">
+         <div class="label">
+          Ingredients in this Dish
+         </div><button type="button" onclick="addRecipeRow()" class="btn btn-ghost text-xs"><i data-lucide="plus" class="w-3 h-3"></i>Add Ingredient</button>
+        </div>
+        <div id="recipeRows" class="flex flex-col gap-2"></div>
+       </div>
+       <div class="mt-4 flex flex-wrap gap-2 items-center justify-between">
+        <div class="chip"><i data-lucide="calculator" class="w-3 h-3"></i>Recipe Cost: <strong id="currentRecipeCost">LKR 0.00</strong>
+        </div>
+        <div class="flex gap-2">
+         <button type="button" onclick="saveRecipe()" class="btn btn-primary" id="recipeSaveBtn"><i data-lucide="save" class="w-4 h-4"></i>Save Dish</button>
+        </div>
+       </div>
+      </div><!-- List -->
+      <div class="lg:col-span-2 glass rounded-xl p-4 flex flex-col" style="max-height:560px;">
+       <div class="jp-serif font-bold mb-2">
+        Saved Dishes
+       </div><input id="recipeSearch" oninput="renderRecipes()" class="field mb-3" placeholder="Search dishes…">
+       <div id="recipeList" class="flex-1 overflow-y-auto flex flex-col gap-2 pr-1"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Expense Modal -->
+  <div class="modal-backdrop" id="expenseModal">
+   <div class="modal" style="max-width:720px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--matcha)]/15 text-[color:var(--matcha)]"><i data-lucide="receipt" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Monthly Expenses <span class="text-[color:var(--ink)]/40 text-sm font-normal">経費</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Fixed monthly operating cost in LKR
+       </div>
+      </div>
+     </div><button onclick="closeModal('expenseModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+       <div class="label mb-1">
+        Rent (LKR)
+       </div><input id="expRent" type="number" step="0.01" min="0" class="field" placeholder="0.00">
+      </div>
+      <div>
+       <div class="label mb-1">
+        Salary (LKR)
+       </div><input id="expSalary" type="number" step="0.01" min="0" class="field" placeholder="0.00">
+      </div>
+      <div>
+       <div class="label mb-1">
+        Gas (LKR)
+       </div><input id="expGas" type="number" step="0.01" min="0" class="field" placeholder="0.00">
+      </div>
+      <div>
+       <div class="label mb-1">
+        Electricity (LKR)
+       </div><input id="expElec" type="number" step="0.01" min="0" class="field" placeholder="0.00">
+      </div>
+     </div>
+     <div class="mt-5 glass rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Total Monthly Expenses
+       </div>
+       <div class="stat-num text-2xl text-[color:var(--crimson)]" id="expTotalPreview">
+        LKR 0.00
+       </div>
+      </div><button onclick="saveExpenses()" class="btn btn-primary" id="expSaveBtn"><i data-lucide="save" class="w-4 h-4"></i>Save Expenses</button>
+     </div>
+    </div>
+   </div>
+  </div><!-- Settings Modal -->
+  <div class="modal-backdrop" id="settingsModal">
+   <div class="modal" style="max-width:620px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--gold-deep)]/15 text-[color:var(--gold-deep)]"><i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Settings <span class="text-[color:var(--ink)]/40 text-sm font-normal">設定</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Monthly plates &amp; profit margin
+       </div>
+      </div>
+     </div><button onclick="closeModal('settingsModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div class="space-y-6"><!-- Monthly Plates Section -->
+      <div class="glass rounded-xl p-5">
+       <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600"><i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <div>
+         <div class="jp-serif font-bold text-lg">
+          Monthly Plates
+         </div>
+         <div class="text-xs text-[color:var(--ink)]/60">
+          Expected dishes sold per month
+         </div>
+        </div>
+       </div>
+       <div class="space-y-3">
+        <div class="flex items-end gap-3">
+         <div class="flex-1">
+          <div class="label mb-2">
+           Enter Plates
+          </div>
+          <div class="flex items-center gap-2"><button type="button" onclick="decrementPlates()" class="btn btn-ghost p-2 w-10 h-10 justify-center"><i data-lucide="minus" class="w-5 h-5"></i></button> <input id="setPlates" type="number" min="0" step="1" class="field flex-1 text-center text-2xl jp-serif font-bold" placeholder="0"> <button type="button" onclick="incrementPlates()" class="btn btn-ghost p-2 w-10 h-10 justify-center"><i data-lucide="plus" class="w-5 h-5"></i></button>
+          </div>
+         </div>
+         <div class="text-right">
+          <div class="text-[11px] text-[color:var(--ink)]/60">
+           Current
+          </div>
+          <div class="stat-num text-2xl" id="setPlatesChip">
+           0
+          </div>
+         </div>
+        </div>
+        <div class="grid grid-cols-3 gap-2 text-xs"><button type="button" onclick="setPlatesQuick(500)" class="chip hover:bg-black/10 text-center">500</button> <button type="button" onclick="setPlatesQuick(1000)" class="chip hover:bg-black/10 text-center">1,000</button> <button type="button" onclick="setPlatesQuick(2000)" class="chip hover:bg-black/10 text-center">2,000</button>
+        </div>
+       </div>
+      </div><!-- Profit Margin Section -->
+      <div class="glass rounded-xl p-5">
+       <div class="flex items-center gap-3 mb-4">
+        <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-green-100 text-green-600"><i data-lucide="trending-up" class="w-5 h-5"></i>
+        </div>
+        <div>
+         <div class="jp-serif font-bold text-lg">
+          Profit Margin
+         </div>
+         <div class="text-xs text-[color:var(--ink)]/60">
+          Percentage added to final cost
+         </div>
+        </div>
+       </div>
+       <div class="space-y-3">
+        <div class="flex items-end gap-3">
+         <div class="flex-1">
+          <div class="label mb-2">
+           Enter Margin %
+          </div>
+          <div class="flex items-center gap-2"><button type="button" onclick="decrementMargin()" class="btn btn-ghost p-2 w-10 h-10 justify-center"><i data-lucide="minus" class="w-5 h-5"></i></button> <input id="setMargin" type="number" min="0" step="0.1" class="field flex-1 text-center text-2xl jp-serif font-bold" placeholder="0"> <button type="button" onclick="incrementMargin()" class="btn btn-ghost p-2 w-10 h-10 justify-center"><i data-lucide="plus" class="w-5 h-5"></i></button>
+          </div>
+         </div>
+         <div class="text-right">
+          <div class="text-[11px] text-[color:var(--ink)]/60">
+           Current
+          </div>
+          <div class="stat-num text-2xl" id="setMarginChip">
+           0%
+          </div>
+         </div>
+        </div>
+        <div class="grid grid-cols-5 gap-2 text-xs"><button type="button" onclick="setMarginQuick(20)" class="chip hover:bg-black/10 text-center">20%</button> <button type="button" onclick="setMarginQuick(30)" class="chip hover:bg-black/10 text-center">30%</button> <button type="button" onclick="setMarginQuick(35)" class="chip hover:bg-black/10 text-center">35%</button> <button type="button" onclick="setMarginQuick(40)" class="chip hover:bg-black/10 text-center">40%</button> <button type="button" onclick="setMarginQuick(50)" class="chip hover:bg-black/10 text-center">50%</button>
+        </div>
+       </div>
+      </div><!-- Live Summary -->
+      <div class="glass rounded-xl p-4 border-l-4" style="border-left-color: var(--gold);">
+       <div class="text-xs text-[color:var(--ink)]/60 mb-2 uppercase tracking-wider">
+        Live Calculation
+       </div>
+       <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div class="p-3 rounded-lg bg-black/5">
+         <div class="text-[11px] text-[color:var(--ink)]/60">
+          Total Expenses
+         </div>
+         <div class="stat-num text-lg" id="setTotalExp">
+          LKR 0
+         </div>
+        </div>
+        <div class="p-3 rounded-lg bg-black/5">
+         <div class="text-[11px] text-[color:var(--ink)]/60">
+          Overhead / Plate
+         </div>
+         <div class="stat-num text-lg text-[color:var(--crimson)]" id="setOverhead">
+          LKR 0
+         </div>
+        </div>
+        <div class="p-3 rounded-lg bg-black/5">
+         <div class="text-[11px] text-[color:var(--ink)]/60">
+          Margin Applied
+         </div>
+         <div class="stat-num text-lg text-[color:var(--matcha)]" id="setMarginApplied">
+          0%
+         </div>
+        </div>
+       </div>
+      </div><!-- Action -->
+      <div class="flex justify-end gap-2"><button type="button" onclick="resetSettings()" class="btn btn-ghost"><i data-lucide="rotate-ccw" class="w-4 h-4"></i>Reset</button> <button onclick="saveSettings()" class="btn btn-primary" id="setSaveBtn"><i data-lucide="save" class="w-4 h-4"></i>Save Settings</button>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div><!-- Analytics Modal -->
+  <div class="modal-backdrop" id="analyticsModal">
+   <div class="modal" style="max-width:1100px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--ink)]/10 text-[color:var(--ink)]"><i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Analytics <span class="text-[color:var(--ink)]/40 text-sm font-normal">分析</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Profit &amp; cost breakdown per dish
+       </div>
+      </div>
+     </div><button onclick="closeModal('analyticsModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+      <div class="glass rounded-xl p-4">
+       <div class="text-[10px] uppercase tracking-wider text-[color:var(--ink)]/60">
+        Avg. Ingredient Cost
+       </div>
+       <div class="stat-num text-xl mt-1" id="anAvgIng">
+        LKR 0
+       </div>
+      </div>
+      <div class="glass rounded-xl p-4">
+       <div class="text-[10px] uppercase tracking-wider text-[color:var(--ink)]/60">
+        Avg. Final Cost
+       </div>
+       <div class="stat-num text-xl mt-1 text-[color:var(--crimson)]" id="anAvgFinal">
+        LKR 0
+       </div>
+      </div>
+      <div class="glass rounded-xl p-4">
+       <div class="text-[10px] uppercase tracking-wider text-[color:var(--ink)]/60">
+        Avg. Sell Price
+       </div>
+       <div class="stat-num text-xl mt-1 text-[color:var(--indigo)]" id="anAvgSell">
+        LKR 0
+       </div>
+      </div>
+      <div class="glass rounded-xl p-4">
+       <div class="text-[10px] uppercase tracking-wider text-[color:var(--ink)]/60">
+        Avg. Profit / Plate
+       </div>
+       <div class="stat-num text-xl mt-1 text-[color:var(--matcha)]" id="anAvgProfit">
+        LKR 0
+       </div>
+      </div>
+     </div>
+     <div id="anChart" class="flex flex-col gap-2"></div>
+    </div>
+   </div>
+  </div><!-- Export Modal -->
+  <div class="modal-backdrop" id="exportModal">
+   <div class="modal" style="max-width:620px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--gold-deep)]/15 text-[color:var(--gold-deep)]"><i data-lucide="download" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        Export Report <span class="text-[color:var(--ink)]/40 text-sm font-normal">出力</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Professional PDF or Excel
+       </div>
+      </div>
+     </div><button onclick="closeModal('exportModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <button onclick="exportPDF()" class="glass rounded-xl p-5 text-left hover:bg-white/80 transition">
+       <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--crimson)]/10 text-[color:var(--crimson)] mb-3"><i data-lucide="file-text" class="w-5 h-5"></i>
+       </div>
+       <div class="jp-serif font-bold">
+        Kyo Price List (PDF)
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60 mt-1">
+        Formatted restaurant price list with logo &amp; summary
+       </div></button> <button onclick="exportExcel()" class="glass rounded-xl p-5 text-left hover:bg-white/80 transition">
+       <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--matcha)]/15 text-[color:var(--matcha)] mb-3"><i data-lucide="sheet" class="w-5 h-5"></i>
+       </div>
+       <div class="jp-serif font-bold">
+        Full Report (Excel)
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60 mt-1">
+        Ingredients, expenses &amp; dishes in sheets
+       </div></button>
+     </div>
+    </div>
+   </div>
+  </div><!-- AI Modal -->
+  <div class="modal-backdrop" id="aiModal">
+   <div class="modal" style="max-width:720px;">
+    <div class="modal-head">
+     <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-[color:var(--ink)] text-[color:var(--paper)]"><i data-lucide="bot" class="w-5 h-5"></i>
+      </div>
+      <div>
+       <div class="jp-serif font-bold text-lg">
+        AI Costing Assistant <span class="text-[color:var(--ink)]/40 text-sm font-normal">助手</span>
+       </div>
+       <div class="text-xs text-[color:var(--ink)]/60">
+        Rule-based insights from your live data
+       </div>
+      </div>
+     </div><button onclick="closeModal('aiModal')" class="p-2 rounded-lg hover:bg-black/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="modal-body">
+     <div id="aiChat" class="flex flex-col gap-2 mb-3" style="min-height:220px; max-height:360px; overflow-y:auto;"></div>
+     <div class="flex flex-wrap gap-2 mb-3" id="aiSuggestions">
+      <button class="chip hover:bg-black/10" onclick="aiAsk('Which dish has highest profit?')">Top profit dish</button> <button class="chip hover:bg-black/10" onclick="aiAsk('Suggest margin')">Suggest margin</button> <button class="chip hover:bg-black/10" onclick="aiAsk('Breakeven plates')">Breakeven plates</button> <button class="chip hover:bg-black/10" onclick="aiAsk('Most expensive ingredient')">Costly ingredient</button> <button class="chip hover:bg-black/10" onclick="aiAsk('Summary')">Overall summary</button>
+     </div>
+     <form id="aiForm" class="flex gap-2">
+      <input id="aiInput" class="field" placeholder="Ask about pricing, profit, ingredients…"> <button class="btn btn-primary"><i data-lucide="send" class="w-4 h-4"></i></button>
+     </form>
+    </div>
+   </div>
+  </div><!-- Toasts -->
+  <div class="toast-wrap" id="toasts"></div><!-- ================ FIREBASE + LOGIC ================ -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import {
+    getFirestore, collection, doc, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc, getDocs, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB4wTlpntVu-J-FbQ0QJ91JSYF7rsymLLc",
+    authDomain: "-costing-app.firebaseapp.com",
+    databaseURL: "https://-costing-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "-costing-app",
+    storageBucket: "-costing-app.firebasestorage.app",
+    messagingSenderId: "456786408715",
+    appId: "1:456786408715:web:435182a6aba9041e6ade0e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Expose Firebase functions to window for non-module scripts
+  window.__fb = {
+    db, collection, doc, onSnapshot, addDoc, setDoc, updateDoc, deleteDoc, getDocs, serverTimestamp
+  };
+  window.dispatchEvent(new Event('fb-ready'));
+</script>
   <script>
-// ===== STATE =====
-let ingredients = [];
-let recipes = [];
-let expenses = null;
-let settings = null;
-let currentTab = 'dashboard';
-let recipeIngRows = [];
+/* ========== STATE ========== */
+const state = {
+  ingredients: [],   // {id, name, unit, price}
+  recipes: [],       // {id, name, category, items:[{ingredientId, qty}], cost}
+  expenses: { rent:0, salary:0, gas:0, electricity:0 },
+  settings: { plates:0, margin:0 },
+  editingRecipeId: null,
+};
 
-// ===== LOCAL STORAGE =====
-function saveData() {
-  localStorage.setItem('restaurantData', JSON.stringify({
-    ingredients,
-    recipes,
-    expenses,
-    settings
-  }));
-}
+/* ========== UTIL ========== */
+const fmtLKR = n => 'LKR ' + (Number(n)||0).toLocaleString('en-LK', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtLKRShort = n => 'LKR ' + Math.round(Number(n)||0).toLocaleString('en-LK');
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
 
-function loadData() {
-  const saved = localStorage.getItem('restaurantData');
-  if (saved) {
-    try {
-      const data = JSON.parse(saved);
-      ingredients = data.ingredients || [];
-      recipes = data.recipes || [];
-      expenses = data.expenses || null;
-      settings = data.settings || null;
-      renderIngredients();
-      renderRecipes();
-      renderExpensesForm();
-      renderSettingsForm();
-      renderDashboard();
-      renderAnalytics();
-    } catch(e) {
-      console.error('Failed to load data', e);
-    }
-  }
-}
-
-// ===== DATA MANAGEMENT =====
-function addIngredientToMemory(ing) {
-  ing.__backendId = 'ing_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  ingredients.push(ing);
-  saveData();
-}
-
-function deleteIngredientFromMemory(id) {
-  ingredients = ingredients.filter(i => i.__backendId !== id);
-  saveData();
-}
-
-function addRecipeToMemory(rec) {
-  rec.__backendId = 'rec_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  recipes.push(rec);
-  saveData();
-}
-
-function updateRecipeInMemory(id, rec) {
-  const idx = recipes.findIndex(r => r.__backendId === id);
-  if (idx >= 0) {
-    recipes[idx] = { ...recipes[idx], ...rec };
-    saveData();
-  }
-}
-
-function deleteRecipeFromMemory(id) {
-  recipes = recipes.filter(r => r.__backendId !== id);
-  saveData();
-}
-
-function saveExpensesInMemory(data) {
-  if (expenses) {
-    expenses = { ...expenses, ...data };
-  } else {
-    expenses = { __backendId: 'exp_' + Date.now(), ...data };
-  }
-  saveData();
-}
-
-function saveSettingsInMemory(data) {
-  if (settings) {
-    settings = { ...settings, ...data };
-  } else {
-    settings = { __backendId: 'set_' + Date.now(), ...data };
-  }
-  saveData();
-}
-
-// Load data on startup
-document.addEventListener('DOMContentLoaded', () => {
-  loadData();
-});
-
-// ===== NAVIGATION =====
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('[id^="tab-"]').forEach(s => s.style.display = 'none');
-  const el = document.getElementById('tab-' + tab);
-  if (el) el.style.display = '';
-
-  document.querySelectorAll('.nav-btn,[data-nav]').forEach(b => {
-    b.classList.toggle('active', b.getAttribute('data-nav') === tab);
-  });
-
-  if (tab === 'dashboard') { renderDashboard(); }
-  if (tab === 'analytics') { renderAnalytics(); }
-}
-
-// ===== TOAST =====
-function showToast(msg, type = 'success') {
+function toast(msg, type='ok'){
   const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  document.getElementById('toastContainer').appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  t.className = 'toast ' + (type==='err'?'err':type==='ok'?'ok':'');
+  const icon = type==='err' ? 'alert-circle' : type==='ok' ? 'check-circle-2' : 'info';
+  t.innerHTML = `<i data-lucide="${icon}" class="w-4 h-4"></i><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(t);
+  lucide.createIcons();
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; setTimeout(()=>t.remove(),250); }, 2600);
 }
 
-// ===== MODALS =====
-function openModal(id) {
-  document.getElementById(id).classList.add('active');
-}
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-
-// ===== INGREDIENTS =====
-async function addIngredient(e) {
-  e.preventDefault();
-  const name = document.getElementById('ingName').value.trim();
-  const unit = document.getElementById('ingUnit').value.trim();
-  const price = parseFloat(document.getElementById('ingPrice').value);
-  if (!name || !unit || isNaN(price)) return;
-
-  if (ingredients.length >= 990) {
-    showToast('Ingredient limit reached', 'error');
-    return;
-  }
-
-  const btn = document.getElementById('addIngBtn');
-  btn.disabled = true;
-  btn.textContent = 'Adding...';
-  
-  setTimeout(() => {
-    addIngredientToMemory({ type: 'ingredient', name, unit, unit_price: price });
-    btn.disabled = false;
-    btn.textContent = 'Add Ingredient';
-    showToast('Ingredient added');
-    document.getElementById('ingName').value = '';
-    document.getElementById('ingUnit').value = '';
-    document.getElementById('ingPrice').value = '';
-    renderIngredients();
-    closeModal('ingredientModal');
-  }, 300);
-}
-
-function renderIngredients() {
-  const c = document.getElementById('ingredientsList');
-  if (!c) return;
-  if (ingredients.length === 0) {
-    c.innerHTML = '<p class="text-sm" style="color:var(--text2)">No ingredients yet</p>';
-    return;
-  }
-  const existing = new Map([...c.children].map(el => [el.dataset.id, el]));
-  const ids = new Set();
-
-  ingredients.forEach(ing => {
-    const id = ing.__backendId;
-    ids.add(id);
-    const html = `<div style="display:flex;align-items:center;gap:8px;justify-content:space-between;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(201,169,110,0.06);margin-bottom:6px">
-      <div>
-        <span style="font-weight:600;font-size:.875rem">${esc(ing.name)}</span>
-        <span style="color:var(--text2);font-size:.75rem;margin-left:8px">LKR${ing.unit_price} / ${esc(ing.unit)}</span>
-      </div>
-      <button class="btn-danger" style="padding:5px 10px;font-size:12px" onclick="deleteIngredient('${id}')">Del</button>
-    </div>`;
-
-    if (existing.has(id)) {
-      existing.get(id).innerHTML = html;
-    } else {
-      const row = document.createElement('div');
-      row.dataset.id = id;
-      row.innerHTML = html;
-      c.appendChild(row);
-    }
-  });
-
-  existing.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
-}
-
-async function deleteIngredient(id) {
-  deleteIngredientFromMemory(id);
-  renderIngredients();
-  showToast('Deleted');
-}
-
-// ===== RECIPES =====
-function openRecipeModal(editId) {
-  recipeIngRows = [];
-  document.getElementById('dishName').value = '';
-  document.getElementById('editRecipeId').value = '';
-  document.getElementById('recipeModalTitle').textContent = 'New Dish';
-  document.getElementById('recipeIngredients').innerHTML = '';
-  document.getElementById('recipeCostPreview').textContent = 'LKR0';
-
-  if (editId) {
-    const rec = recipes.find(r => r.__backendId === editId);
-    if (rec) {
-      document.getElementById('dishName').value = rec.dish_name;
-      document.getElementById('editRecipeId').value = editId;
-      document.getElementById('recipeModalTitle').textContent = 'Edit Dish';
-      try {
-        const ings = JSON.parse(rec.ingredients_json || '[]');
-        ings.forEach(i => addRecipeIngRow(i.id, i.qty));
-      } catch(e) {}
-    }
+function setBusy(btn, busy, labelHTML){
+  if(!btn) return;
+  if(busy){
+    btn.dataset.prev = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span><span>Saving…</span>`;
   } else {
-    addRecipeIngRow();
-  }
-  openModal('recipeModal');
-}
-
-function addRecipeIngRow(selectedId, qty) {
-  const container = document.getElementById('recipeIngredients');
-  if (!container) return;
-  
-  const idx = recipeIngRows.length;
-  recipeIngRows.push({ id: selectedId || '', qty: qty || 0 });
-
-  const row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.gap = '8px';
-  row.style.marginBottom = '8px';
-  row.style.alignItems = 'center';
-  row.dataset.idx = idx;
-
-  let opts = '<option value="">Select ingredient...</option>';
-  ingredients.forEach(ing => {
-    const sel = ing.__backendId === selectedId ? 'selected' : '';
-    opts += `<option value="${ing.__backendId}" ${sel}>${esc(ing.name)} (LKR${ing.unit_price}/${esc(ing.unit)})</option>`;
-  });
-
-  const select = document.createElement('select');
-  select.style.flex = '1';
-  select.innerHTML = opts;
-  select.onchange = (e) => {
-    recipeIngRows[idx].id = e.target.value;
-    updateRecipeCostPreview();
-  };
-
-  const input = document.createElement('input');
-  input.type = 'number';
-  input.placeholder = 'Qty';
-  input.min = '0';
-  input.step = '0.01';
-  input.value = qty || '';
-  input.style.width = '80px';
-  input.onchange = (e) => {
-    recipeIngRows[idx].qty = parseFloat(e.target.value) || 0;
-    updateRecipeCostPreview();
-  };
-
-  const removeBtn = document.createElement('button');
-  removeBtn.type = 'button';
-  removeBtn.textContent = 'X';
-  removeBtn.style.background = 'none';
-  removeBtn.style.border = 'none';
-  removeBtn.style.color = 'var(--red)';
-  removeBtn.style.cursor = 'pointer';
-  removeBtn.style.padding = '0';
-  removeBtn.style.width = '30px';
-  removeBtn.onclick = (e) => {
-    e.preventDefault();
-    recipeIngRows[idx] = null;
-    row.remove();
-    updateRecipeCostPreview();
-  };
-
-  row.appendChild(select);
-  row.appendChild(input);
-  row.appendChild(removeBtn);
-  container.appendChild(row);
-}
-
-function updateRecipeCostPreview() {
-  let cost = 0;
-  recipeIngRows.forEach(r => {
-    if (!r) return;
-    const ing = ingredients.find(i => i.__backendId === r.id);
-    if (ing) cost += ing.unit_price * r.qty;
-  });
-  document.getElementById('recipeCostPreview').textContent = 'LKR ' + cost.toFixed(2);
-}
-
-async function saveRecipe(e) {
-  e.preventDefault();
-  const name = document.getElementById('dishName').value.trim();
-  if (!name) return;
-  const ings = recipeIngRows.filter(Boolean).filter(r => r.id);
-  const json = JSON.stringify(ings.map(r => ({ id: r.id, qty: r.qty })));
-  const editId = document.getElementById('editRecipeId').value;
-
-  const btn = document.getElementById('saveRecipeBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
-  setTimeout(() => {
-    if (editId) {
-      updateRecipeInMemory(editId, { dish_name: name, ingredients_json: json });
-    } else {
-      if (recipes.length >= 999) { showToast('Limit reached', 'error'); btn.disabled = false; btn.textContent = 'Save Dish'; return; }
-      addRecipeToMemory({ type: 'recipe', dish_name: name, ingredients_json: json });
-    }
     btn.disabled = false;
-    btn.textContent = 'Save Dish';
-    showToast('Dish saved');
-    renderRecipes();
-    renderDashboard();
-    renderAnalytics();
-    closeModal('recipeModal');
-  }, 300);
-}
-
-function renderRecipes() {
-  const c = document.getElementById('recipesList');
-  if (!c) return;
-  if (recipes.length === 0) {
-    c.innerHTML = '<p class="text-sm" style="color:var(--text2)">No dishes yet</p>';
-    return;
+    btn.innerHTML = btn.dataset.prev || labelHTML || btn.innerHTML;
+    lucide.createIcons();
   }
-  const existing = new Map([...c.children].map(el => [el.dataset.id, el]));
-  const ids = new Set();
-
-  recipes.forEach(rec => {
-    const id = rec.__backendId;
-    ids.add(id);
-    const cost = calcRecipeCost(rec);
-    let ingsHtml = '';
-    try {
-      const ings = JSON.parse(rec.ingredients_json || '[]');
-      ings.forEach(i => {
-        const ing = ingredients.find(x => x.__backendId === i.id);
-        if (ing) ingsHtml += `<span class="tag">${esc(ing.name)} × ${i.qty}</span> `;
-      });
-    } catch(e) {}
-    
-    const html = `<div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:12px">
-      <h3 class="font-jp font-semibold">${esc(rec.dish_name)}</h3>
-      <div style="display:flex;gap:8px">
-        <button class="btn-secondary" style="padding:5px 10px;font-size:12px" onclick="openRecipeModal('${rec.__backendId}')">Edit</button>
-        <button class="btn-danger" style="padding:5px 10px;font-size:12px" onclick="deleteRecipe('${rec.__backendId}')">Del</button>
-      </div>
-    </div>
-    <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px">${ingsHtml || '<span class="text-xs" style="color:var(--text2)">No ingredients</span>'}</div>
-    <div class="text-sm" style="color:var(--accent2)">Recipe Cost: LKR${cost.toFixed(2)}</div>`;
-
-    if (existing.has(id)) {
-      existing.get(id).innerHTML = html;
-    } else {
-      const card = document.createElement('div');
-      card.className = 'dish-card';
-      card.dataset.id = id;
-      card.innerHTML = html;
-      c.appendChild(card);
-    }
-  });
-  existing.forEach((el, id) => { if (!ids.has(id)) el.remove(); });
 }
 
-function calcRecipeCost(rec) {
-  let cost = 0;
-  try {
-    JSON.parse(rec.ingredients_json || '[]').forEach(i => {
-      const ing = ingredients.find(x => x.__backendId === i.id);
-      if (ing) cost += ing.unit_price * i.qty;
-    });
-  } catch(e) {}
-  return cost;
-}
-
-async function deleteRecipe(id) {
-  deleteRecipeFromMemory(id);
-  renderRecipes();
-  renderDashboard();
-  renderAnalytics();
-  showToast('Dish deleted');
-}
-
-// ===== EXPENSES =====
-function renderExpensesForm() {
-  if (!expenses) return;
-  document.getElementById('expRent').value = expenses.rent || 0;
-  document.getElementById('expSalary').value = expenses.salary || 0;
-  document.getElementById('expGas').value = expenses.gas || 0;
-  document.getElementById('expElectricity').value = expenses.electricity || 0;
-  updateExpTotal();
-}
-
-['expRent','expSalary','expGas','expElectricity'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', updateExpTotal);
+/* ========== MODAL ========== */
+window.openModal = id => { document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; };
+window.closeModal = id => { document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; };
+document.addEventListener('click', e => {
+  if(e.target.classList && e.target.classList.contains('modal-backdrop')){
+    e.target.classList.remove('open'); document.body.style.overflow='';
+  }
+});
+document.addEventListener('keydown', e => {
+  if(e.key==='Escape') $$('.modal-backdrop.open').forEach(m => { m.classList.remove('open'); document.body.style.overflow=''; });
 });
 
-function updateExpTotal() {
-  const t = ['expRent','expSalary','expGas','expElectricity'].reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
-  document.getElementById('expTotal').textContent = 'LKR ' + t.toLocaleString();
+/* ========== FIREBASE CONNECTION ========== */
+let fb = null;
+function setFbStatus(status){
+  const dot = document.getElementById('fbDot');
+  const txt = document.getElementById('fbText');
+  dot.className = 'fb-dot ' + (status==='on'?'fb-on':status==='load'?'fb-load':'fb-off');
+  txt.textContent = status==='on' ? 'Live · Firestore' : status==='load' ? 'Connecting…' : 'Offline';
 }
 
-async function saveExpenses() {
-  const data = {
-    rent: parseFloat(document.getElementById('expRent').value) || 0,
-    salary: parseFloat(document.getElementById('expSalary').value) || 0,
-    gas: parseFloat(document.getElementById('expGas').value) || 0,
-    electricity: parseFloat(document.getElementById('expElectricity').value) || 0
+window.addEventListener('fb-ready', () => {
+  fb = window.__fb;
+  setFbStatus('load');
+  attachListeners();
+});
+
+function attachListeners(){
+  try {
+    // Ingredients
+    fb.onSnapshot(fb.collection(fb.db, 'ingredients'), snap => {
+      state.ingredients = [];
+      snap.forEach(d => state.ingredients.push({ id:d.id, ...d.data() }));
+      state.ingredients.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      renderIngredients();
+      renderRecipeIngredientOptions();
+      renderRecipes();
+      renderOverview();
+      renderAnalytics();
+      setFbStatus('on');
+    }, err => { console.error(err); setFbStatus('off'); toast('Firebase: '+err.message,'err'); });
+
+    // Recipes
+    fb.onSnapshot(fb.collection(fb.db, 'recipes'), snap => {
+      state.recipes = [];
+      snap.forEach(d => state.recipes.push({ id:d.id, ...d.data() }));
+      state.recipes.sort((a,b)=> (a.name||'').localeCompare(b.name||''));
+      renderRecipes();
+      renderOverview();
+      renderAnalytics();
+    }, err => { console.error(err); });
+
+    // Expenses (single doc: 'monthly')
+    fb.onSnapshot(fb.doc(fb.db, 'expenses', 'monthly'), d => {
+      if(d.exists()) state.expenses = { rent:0, salary:0, gas:0, electricity:0, ...d.data() };
+      hydrateExpenseForm();
+      renderOverview();
+      renderAnalytics();
+      renderKPIs();
+    });
+
+    // Settings (single doc: 'config')
+    fb.onSnapshot(fb.doc(fb.db, 'settings', 'config'), d => {
+      if(d.exists()) state.settings = { plates:0, margin:0, ...d.data() };
+      hydrateSettingsForm();
+      renderOverview();
+      renderAnalytics();
+      renderKPIs();
+    });
+  } catch(e){
+    console.error(e); setFbStatus('off');
+  }
+}
+
+/* ========== INGREDIENTS ========== */
+document.getElementById('ingredientForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if(!fb) return toast('Firebase not ready','err');
+  const name = $('#ingName').value.trim();
+  const unit = $('#ingUnit').value;
+  const price = parseFloat($('#ingPrice').value);
+  if(!name || isNaN(price) || price < 0) return toast('Enter valid name & price','err');
+
+  // Prevent duplicate by name (case-insensitive)
+  const dup = state.ingredients.find(i => (i.name||'').toLowerCase() === name.toLowerCase() && i.id !== editingIngId);
+  if(dup) return toast('Ingredient already exists','err');
+
+  const btn = $('#ingSubmitBtn');
+  setBusy(btn, true);
+  try {
+    if(editingIngId){
+      await fb.updateDoc(fb.doc(fb.db,'ingredients',editingIngId), { name, unit, price });
+      toast('Ingredient updated');
+      editingIngId = null;
+    } else {
+      await fb.addDoc(fb.collection(fb.db,'ingredients'), { name, unit, price, createdAt: fb.serverTimestamp() });
+      toast('Ingredient added');
+    }
+    $('#ingredientForm').reset();
+  } catch(err){ toast(err.message,'err'); }
+  finally { setBusy(btn,false); lucide.createIcons(); }
+});
+
+let editingIngId = null;
+function renderIngredients(){
+  const tb = $('#ingredientList');
+  if(!state.ingredients.length){
+    tb.innerHTML = `<tr><td colspan="4" class="text-center text-[color:var(--ink)]/50 py-6">No ingredients yet</td></tr>`;
+    return;
+  }
+  tb.innerHTML = state.ingredients.map(i => `
+    <tr>
+      <td class="font-medium">${escapeHtml(i.name)}</td>
+      <td class="text-[color:var(--ink)]/70">${escapeHtml(i.unit||'-')}</td>
+      <td>${fmtLKR(i.price)}</td>
+      <td class="text-right">
+        <button onclick="editIngredient('${i.id}')" class="p-1.5 rounded-lg hover:bg-black/5" title="Edit"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+        <button onclick="deleteIngredient('${i.id}')" class="p-1.5 rounded-lg hover:bg-red-100 text-red-600" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+      </td>
+    </tr>
+  `).join('');
+  lucide.createIcons();
+}
+window.editIngredient = id => {
+  const i = state.ingredients.find(x=>x.id===id); if(!i) return;
+  $('#ingName').value = i.name; $('#ingUnit').value = i.unit||'kg'; $('#ingPrice').value = i.price;
+  editingIngId = id;
+  toast('Editing: '+i.name,'info');
+};
+window.deleteIngredient = async id => {
+  const i = state.ingredients.find(x=>x.id===id); if(!i) return;
+  const used = state.recipes.some(r => (r.items||[]).some(it => it.ingredientId===id));
+  if(used) return toast('In use by a recipe — remove first','err');
+  if(!await confirmInline('Delete '+i.name+'?')) return;
+  try { await fb.deleteDoc(fb.doc(fb.db,'ingredients',id)); toast('Deleted'); }
+  catch(e){ toast(e.message,'err'); }
+};
+
+/* ========== RECIPES ========== */
+function renderRecipeIngredientOptions(){
+  // populate every select
+  $$('.rcp-ing').forEach(sel => {
+    const cur = sel.value;
+    sel.innerHTML = `<option value="">Select ingredient…</option>` +
+      state.ingredients.map(i => `<option value="${i.id}">${escapeHtml(i.name)} · ${fmtLKR(i.price)}/${escapeHtml(i.unit||'')}</option>`).join('');
+    sel.value = cur;
+  });
+  updateCurrentRecipeCost();
+}
+
+window.addRecipeRow = (ingredientId='', qty='') => {
+  const wrap = $('#recipeRows');
+  const row = document.createElement('div');
+  row.className = 'grid grid-cols-12 gap-2 items-center';
+  row.innerHTML = `
+    <div class="col-span-7 sm:col-span-8">
+      <select class="field rcp-ing" onchange="updateCurrentRecipeCost()"></select>
+    </div>
+    <div class="col-span-4 sm:col-span-3">
+      <input type="number" step="0.001" min="0" class="field rcp-qty" placeholder="Qty" oninput="updateCurrentRecipeCost()" value="${qty}">
+    </div>
+    <div class="col-span-1 flex justify-end">
+      <button type="button" onclick="this.closest('div.grid').remove(); updateCurrentRecipeCost();" class="p-2 rounded-lg hover:bg-red-100 text-red-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>`;
+  wrap.appendChild(row);
+  renderRecipeIngredientOptions();
+  if(ingredientId) row.querySelector('.rcp-ing').value = ingredientId;
+  lucide.createIcons();
+};
+
+window.updateCurrentRecipeCost = () => {
+  const rows = $$('#recipeRows > div');
+  let cost = 0;
+  rows.forEach(r => {
+    const id = r.querySelector('.rcp-ing').value;
+    const qty = parseFloat(r.querySelector('.rcp-qty').value)||0;
+    const ing = state.ingredients.find(i=>i.id===id);
+    if(ing) cost += (Number(ing.price)||0) * qty;
+  });
+  $('#currentRecipeCost').textContent = fmtLKR(cost);
+  return cost;
+};
+
+window.resetRecipeForm = () => {
+  state.editingRecipeId = null;
+  $('#dishName').value = '';
+  $('#dishCategory').value = 'Sushi';
+  $('#recipeRows').innerHTML = '';
+  addRecipeRow();
+  updateCurrentRecipeCost();
+};
+
+window.saveRecipe = async () => {
+  if(!fb) return toast('Firebase not ready','err');
+  const name = $('#dishName').value.trim();
+  const category = $('#dishCategory').value;
+  if(!name) return toast('Enter dish name','err');
+  const rows = $$('#recipeRows > div');
+  const items = [];
+  rows.forEach(r => {
+    const ingredientId = r.querySelector('.rcp-ing').value;
+    const qty = parseFloat(r.querySelector('.rcp-qty').value)||0;
+    if(ingredientId && qty>0) items.push({ ingredientId, qty });
+  });
+  if(!items.length) return toast('Add at least one ingredient','err');
+
+  // duplicate check
+  const dup = state.recipes.find(r => (r.name||'').toLowerCase()===name.toLowerCase() && r.id !== state.editingRecipeId);
+  if(dup) return toast('Dish name already exists','err');
+
+  const cost = items.reduce((s,it)=>{
+    const ing = state.ingredients.find(i=>i.id===it.ingredientId);
+    return s + (ing ? (Number(ing.price)||0)*it.qty : 0);
+  },0);
+
+  const btn = $('#recipeSaveBtn');
+  setBusy(btn,true);
+  try {
+    if(state.editingRecipeId){
+      await fb.updateDoc(fb.doc(fb.db,'recipes',state.editingRecipeId), { name, category, items, cost });
+      toast('Dish updated');
+    } else {
+      await fb.addDoc(fb.collection(fb.db,'recipes'), { name, category, items, cost, createdAt: fb.serverTimestamp() });
+      toast('Dish saved');
+    }
+    resetRecipeForm();
+  } catch(e){ toast(e.message,'err'); }
+  finally { setBusy(btn,false); lucide.createIcons(); }
+};
+
+function renderRecipes(){
+  const q = ($('#recipeSearch')?.value||'').toLowerCase();
+  const list = state.recipes.filter(r => !q || (r.name||'').toLowerCase().includes(q) || (r.category||'').toLowerCase().includes(q));
+  const wrap = $('#recipeList');
+  if(!wrap) return;
+  if(!list.length){
+    wrap.innerHTML = `<div class="text-center text-[color:var(--ink)]/50 py-6 text-sm">No dishes yet</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(r => {
+    const c = calcDishNumbers(r);
+    return `
+    <div class="p-3 rounded-xl hairline bg-white/60 hover:bg-white transition">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <div class="font-semibold jp-serif truncate">${escapeHtml(r.name)}</div>
+          <div class="text-[11px] text-[color:var(--ink)]/60">${escapeHtml(r.category||'Dish')} · ${r.items?.length||0} ingredients</div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="editRecipe('${r.id}')" class="p-1.5 rounded-lg hover:bg-black/5"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+          <button onclick="deleteRecipe('${r.id}')" class="p-1.5 rounded-lg hover:bg-red-100 text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+      <div class="mt-2 grid grid-cols-3 gap-1 text-[11px]">
+        <div class="chip justify-center">Cost ${fmtLKRShort(c.finalCost)}</div>
+        <div class="chip justify-center" style="background:rgba(184,50,42,0.1);color:#8a231d">Sell ${fmtLKRShort(c.sellPrice)}</div>
+        <div class="chip justify-center" style="background:rgba(85,107,61,0.12);color:#3d5028">+${fmtLKRShort(c.profit)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+window.editRecipe = id => {
+  const r = state.recipes.find(x=>x.id===id); if(!r) return;
+  state.editingRecipeId = id;
+  $('#dishName').value = r.name || '';
+  $('#dishCategory').value = r.category || 'Sushi';
+  $('#recipeRows').innerHTML = '';
+  (r.items||[]).forEach(it => addRecipeRow(it.ingredientId, it.qty));
+  if(!(r.items||[]).length) addRecipeRow();
+  updateCurrentRecipeCost();
+  toast('Editing: '+r.name,'info');
+};
+window.deleteRecipe = async id => {
+  const r = state.recipes.find(x=>x.id===id); if(!r) return;
+  if(!await confirmInline('Delete '+r.name+'?')) return;
+  try { await fb.deleteDoc(fb.doc(fb.db,'recipes',id)); toast('Deleted'); }
+  catch(e){ toast(e.message,'err'); }
+};
+
+/* ========== EXPENSES ========== */
+function hydrateExpenseForm(){
+  $('#expRent').value = state.expenses.rent||'';
+  $('#expSalary').value = state.expenses.salary||'';
+  $('#expGas').value = state.expenses.gas||'';
+  $('#expElec').value = state.expenses.electricity||'';
+  updateExpensePreview();
+}
+function updateExpensePreview(){
+  const total = getTotalExpenses(readExpenseForm());
+  $('#expTotalPreview').textContent = fmtLKR(total);
+}
+function readExpenseForm(){
+  return {
+    rent: parseFloat($('#expRent').value)||0,
+    salary: parseFloat($('#expSalary').value)||0,
+    gas: parseFloat($('#expGas').value)||0,
+    electricity: parseFloat($('#expElec').value)||0,
   };
-
-  const btn = document.getElementById('saveExpBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
-  setTimeout(() => {
-    saveExpensesInMemory(data);
-    btn.disabled = false;
-    btn.textContent = 'Save Expenses';
-    showToast('Expenses saved');
-    renderDashboard();
-    renderAnalytics();
-  }, 300);
+}
+['expRent','expSalary','expGas','expElec'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateExpensePreview);
+});
+window.saveExpenses = async () => {
+  if(!fb) return toast('Firebase not ready','err');
+  const data = readExpenseForm();
+  const btn = $('#expSaveBtn');
+  setBusy(btn,true);
+  try {
+    await fb.setDoc(fb.doc(fb.db,'expenses','monthly'), { ...data, updatedAt: fb.serverTimestamp() }, { merge:true });
+    toast('Expenses saved');
+  } catch(e){ toast(e.message,'err'); }
+  finally { setBusy(btn,false); lucide.createIcons(); }
+};
+function getTotalExpenses(exp=state.expenses){
+  return (Number(exp.rent)||0)+(Number(exp.salary)||0)+(Number(exp.gas)||0)+(Number(exp.electricity)||0);
 }
 
-// ===== SETTINGS =====
-function renderSettingsForm() {
-  if (!settings) return;
-  document.getElementById('setPlates').value = settings.expected_plates || '';
-  document.getElementById('setMargin').value = settings.profit_margin || '';
+/* ========== SETTINGS ========== */
+function hydrateSettingsForm(){
+  $('#setPlates').value = state.settings.plates||'';
+  $('#setMargin').value = state.settings.margin||'';
+  updateSettingsPreview();
+}
+function updateSettingsPreview(){
+  const plates = parseFloat($('#setPlates').value)||0;
+  const margin = parseFloat($('#setMargin').value)||0;
+  const total = getTotalExpenses();
+  const overhead = plates>0 ? total/plates : 0;
+  $('#setTotalExp').textContent = fmtLKR(total);
+  $('#setPlatesChip').textContent = plates.toLocaleString();
+  $('#setOverhead').textContent = fmtLKR(overhead);
+  $('#setMarginChip').textContent = margin+'%';
+  $('#setMarginApplied').textContent = margin+'%';
+}
+window.decrementPlates = () => {
+  const val = parseFloat($('#setPlates').value)||0;
+  $('#setPlates').value = Math.max(0, val - 100);
+  updateSettingsPreview();
+};
+window.incrementPlates = () => {
+  const val = parseFloat($('#setPlates').value)||0;
+  $('#setPlates').value = val + 100;
+  updateSettingsPreview();
+};
+window.setPlatesQuick = n => {
+  $('#setPlates').value = n;
+  updateSettingsPreview();
+};
+window.decrementMargin = () => {
+  const val = parseFloat($('#setMargin').value)||0;
+  $('#setMargin').value = Math.max(0, val - 1);
+  updateSettingsPreview();
+};
+window.incrementMargin = () => {
+  const val = parseFloat($('#setMargin').value)||0;
+  $('#setMargin').value = val + 1;
+  updateSettingsPreview();
+};
+window.setMarginQuick = n => {
+  $('#setMargin').value = n;
+  updateSettingsPreview();
+};
+window.resetSettings = () => {
+  $('#setPlates').value = '';
+  $('#setMargin').value = '';
+  updateSettingsPreview();
+};
+['setPlates','setMargin'].forEach(id => document.getElementById(id).addEventListener('input', updateSettingsPreview));
+window.saveSettings = async () => {
+  if(!fb) return toast('Firebase not ready','err');
+  const plates = parseFloat($('#setPlates').value)||0;
+  const margin = parseFloat($('#setMargin').value)||0;
+  if(plates<0 || margin<0) return toast('Values must be ≥ 0','err');
+  const btn = $('#setSaveBtn');
+  setBusy(btn,true);
+  try {
+    await fb.setDoc(fb.doc(fb.db,'settings','config'), { plates, margin, updatedAt: fb.serverTimestamp() }, { merge:true });
+    toast('Settings saved');
+  } catch(e){ toast(e.message,'err'); }
+  finally { setBusy(btn,false); lucide.createIcons(); }
+};
+
+/* ========== COSTING ENGINE ========== */
+function calcDishNumbers(recipe){
+  const ingCost = Number(recipe.cost)||0;
+  const total = getTotalExpenses();
+  const plates = Number(state.settings.plates)||0;
+  const margin = Number(state.settings.margin)||0;
+  const overhead = plates>0 ? total/plates : 0;
+  const finalCost = ingCost + overhead;
+  const sellPrice = finalCost * (1 + margin/100);
+  const profit = sellPrice - finalCost;
+  return { ingCost, overhead, finalCost, sellPrice, profit };
 }
 
-async function saveSettings() {
-  const plates = parseInt(document.getElementById('setPlates').value) || 500;
-  const margin = parseFloat(document.getElementById('setMargin').value) || 30;
-
-  const btn = document.getElementById('saveSetBtn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
-  setTimeout(() => {
-    saveSettingsInMemory({ expected_plates: plates, profit_margin: margin });
-    btn.disabled = false;
-    btn.textContent = 'Save Settings';
-    showToast('Settings saved');
-    renderDashboard();
-    renderAnalytics();
-  }, 300);
+/* ========== OVERVIEW + KPIs ========== */
+function renderKPIs(){
+  $('#kpiIngredients').textContent = state.ingredients.length;
+  $('#kpiDishes').textContent = state.recipes.length;
+  const plates = Number(state.settings.plates)||0;
+  const total = getTotalExpenses();
+  const overhead = plates>0 ? total/plates : 0;
+  $('#kpiOverhead').textContent = fmtLKRShort(overhead);
+  $('#kpiMargin').textContent = (Number(state.settings.margin)||0)+'%';
 }
-
-// ===== COSTING ENGINE =====
-function calcDishPricing(rec) {
-  const recipeCost = calcRecipeCost(rec);
-  const totalExp = expenses ? (expenses.rent || 0) + (expenses.salary || 0) + (expenses.gas || 0) + (expenses.electricity || 0) : 0;
-  const plates = settings ? (settings.expected_plates || 500) : 500;
-  const margin = settings ? (settings.profit_margin || 30) : 30;
-
-  const overhead = totalExp / plates;
-  const finalCost = recipeCost + overhead;
-  const sellingPrice = finalCost * (1 + margin / 100);
-  const profit = sellingPrice - finalCost;
-
-  return { recipeCost, overhead, finalCost, sellingPrice, profit, margin };
-}
-
-// ===== DASHBOARD =====
-function renderDashboard() {
-  document.getElementById('statIngredients').textContent = ingredients.length;
-  document.getElementById('statDishes').textContent = recipes.length;
-
-  const totalExp = expenses ? (expenses.rent || 0) + (expenses.salary || 0) + (expenses.gas || 0) + (expenses.electricity || 0) : 0;
-  document.getElementById('statExpenses').textContent = 'LKR ' + totalExp.toLocaleString();
-
-  // Update dashboard inputs with current settings
-  document.getElementById('dashPlates').value = settings ? (settings.expected_plates || 500) : 500;
-  document.getElementById('dashMargin').value = settings ? (settings.profit_margin || 30) : 30;
-
-  let avgProfit = 0;
-  if (recipes.length > 0) {
-    avgProfit = recipes.reduce((s, r) => s + calcDishPricing(r).profit, 0) / recipes.length;
-  }
-  document.getElementById('statProfit').textContent = 'LKR ' + avgProfit.toFixed(0);
-
-  const dc = document.getElementById('dashboardDishes');
-  if (recipes.length === 0) {
-    dc.innerHTML = '<p class="text-sm" style="color:var(--text2)">Add dishes to see pricing</p>';
+function renderOverview(){
+  renderKPIs();
+  const body = $('#overviewBody');
+  if(!state.recipes.length){
+    body.innerHTML = `<tr><td colspan="7" class="text-center text-[color:var(--ink)]/50 py-8">No dishes yet. Create your first dish.</td></tr>`;
     return;
   }
-
-  dc.innerHTML = recipes.map(rec => {
-    const p = calcDishPricing(rec);
-    return `<div class="dish-card">
-      <h3 class="font-jp font-semibold mb-3">${esc(rec.dish_name)}</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.875rem">
-        <div style="color:var(--text2)">Recipe Cost</div><div style="text-align:right">LKR${p.recipeCost.toFixed(0)}</div>
-        <div style="color:var(--text2)">Overhead</div><div style="text-align:right">LKR${p.overhead.toFixed(0)}</div>
-        <div style="color:var(--text2)">Final Cost</div><div style="text-align:right;font-weight:600">LKR${p.finalCost.toFixed(0)}</div>
-        <div style="color:var(--text2)">Selling Price</div><div style="text-align:right;font-weight:700;color:var(--accent2)">LKR${p.sellingPrice.toFixed(0)}</div>
-        <div style="color:var(--text2)">Profit</div><div style="text-align:right;font-weight:700;color:var(--green)">LKR${p.profit.toFixed(0)}</div>
-      </div>
-    </div>`;
+  body.innerHTML = state.recipes.map((r,idx) => {
+    const c = calcDishNumbers(r);
+    return `
+    <tr>
+      <td class="text-[color:var(--ink)]/50">${idx+1}</td>
+      <td>
+        <div class="font-semibold jp-serif">${escapeHtml(r.name)}</div>
+        <div class="text-[11px] text-[color:var(--ink)]/55">${escapeHtml(r.category||'')}</div>
+      </td>
+      <td>${fmtLKR(c.ingCost)}</td>
+      <td class="text-[color:var(--ink)]/70">${fmtLKR(c.overhead)}</td>
+      <td class="font-semibold">${fmtLKR(c.finalCost)}</td>
+      <td class="font-bold text-[color:var(--crimson)]">${fmtLKR(c.sellPrice)}</td>
+      <td class="font-semibold text-[color:var(--matcha)]">${fmtLKR(c.profit)}</td>
+    </tr>`;
   }).join('');
 }
 
-function saveDashboardSettings() {
-  const plates = parseInt(document.getElementById('dashPlates').value) || 500;
-  const margin = parseFloat(document.getElementById('dashMargin').value) || 30;
-  
-  saveSettingsInMemory({ expected_plates: plates, profit_margin: margin });
-  showToast('Settings updated');
-  renderDashboard();
-  renderAnalytics();
-}
-
-// ===== ANALYTICS =====
-function renderAnalytics() {
-  const c = document.getElementById('analyticsContent');
-  if (!c) return;
-  if (recipes.length === 0) {
-    c.innerHTML = '<p class="text-sm" style="color:var(--text2)">Add dishes to see analytics</p>';
+/* ========== ANALYTICS ========== */
+function renderAnalytics(){
+  if(!state.recipes.length){
+    $('#anAvgIng').textContent='LKR 0'; $('#anAvgFinal').textContent='LKR 0';
+    $('#anAvgSell').textContent='LKR 0'; $('#anAvgProfit').textContent='LKR 0';
+    $('#anChart').innerHTML = `<div class="text-center text-[color:var(--ink)]/50 py-8 text-sm">No dishes to analyze</div>`;
     return;
   }
-
-  let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem">';
-  recipes.forEach(rec => {
-    const p = calcDishPricing(rec);
-    const costPct = Math.min((p.finalCost / p.sellingPrice) * 100, 100);
-    const profitPct = 100 - costPct;
-    html += `<div class="dish-card">
-      <h3 class="font-jp font-semibold mb-3">${esc(rec.dish_name)}</h3>
-      <div style="height:24px;border-radius:12px;overflow:hidden;display:flex;background:rgba(255,255,255,0.05);margin-bottom:12px">
-        <div style="width:${costPct}%;background:linear-gradient(90deg,#e05555,#c94545);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff">${costPct.toFixed(0)}%</div>
-        <div style="width:${profitPct}%;background:linear-gradient(90deg,#4a9e65,#6ec98a);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff">${profitPct.toFixed(0)}%</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:.75rem;text-align:center">
-        <div class="glass2" style="border-radius:10px;padding:10px">
-          <div style="color:var(--text2)">Cost</div>
-          <div style="font-weight:600;margin-top:4px">LKR${p.finalCost.toFixed(0)}</div>
+  const rows = state.recipes.map(r=>({r, c:calcDishNumbers(r)}));
+  const n = rows.length;
+  const sum = rows.reduce((a,x)=>({ i:a.i+x.c.ingCost, f:a.f+x.c.finalCost, s:a.s+x.c.sellPrice, p:a.p+x.c.profit }),{i:0,f:0,s:0,p:0});
+  $('#anAvgIng').textContent = fmtLKRShort(sum.i/n);
+  $('#anAvgFinal').textContent = fmtLKRShort(sum.f/n);
+  $('#anAvgSell').textContent = fmtLKRShort(sum.s/n);
+  $('#anAvgProfit').textContent = fmtLKRShort(sum.p/n);
+  const max = Math.max(...rows.map(x=>x.c.sellPrice),1);
+  $('#anChart').innerHTML = rows.map(({r,c}) => {
+    const sellW = Math.max(4, (c.sellPrice/max)*100);
+    const costW = Math.max(2, (c.finalCost/max)*100);
+    return `
+      <div class="p-3 rounded-xl hairline bg-white/60">
+        <div class="flex items-center justify-between text-sm">
+          <div class="font-semibold jp-serif truncate">${escapeHtml(r.name)}</div>
+          <div class="text-xs text-[color:var(--ink)]/60">Profit: <span class="text-[color:var(--matcha)] font-semibold">${fmtLKRShort(c.profit)}</span></div>
         </div>
-        <div class="glass2" style="border-radius:10px;padding:10px">
-          <div style="color:var(--text2)">Price</div>
-          <div style="font-weight:600;margin-top:4px;color:var(--accent2)">LKR${p.sellingPrice.toFixed(0)}</div>
+        <div class="mt-2 space-y-1">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] w-10 text-[color:var(--ink)]/55">Cost</span>
+            <div class="flex-1 h-2.5 rounded-full bg-black/5 overflow-hidden">
+              <div style="width:${costW}%; background:linear-gradient(90deg,#1e2a47,#3c5080);" class="h-full"></div>
+            </div>
+            <span class="text-[11px] w-20 text-right">${fmtLKRShort(c.finalCost)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] w-10 text-[color:var(--ink)]/55">Sell</span>
+            <div class="flex-1 h-2.5 rounded-full bg-black/5 overflow-hidden">
+              <div style="width:${sellW}%; background:linear-gradient(90deg,#b8322a,#d4b373);" class="h-full"></div>
+            </div>
+            <span class="text-[11px] w-20 text-right">${fmtLKRShort(c.sellPrice)}</span>
+          </div>
         </div>
-        <div class="glass2" style="border-radius:10px;padding:10px">
-          <div style="color:var(--text2)">Profit</div>
-          <div style="font-weight:600;margin-top:4px;color:var(--green)">LKR${p.profit.toFixed(0)}</div>
-        </div>
-      </div>
-    </div>`;
-  });
-  html += '</div>';
-  c.innerHTML = html;
-}
-
-// ===== EXPORT =====
-function exportPDF() {
-  if (recipes.length === 0) { showToast('No dishes to export', 'error'); return; }
-  
-  const html = generatePDFHTML();
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `restaurant_report_${new Date().toISOString().slice(0,10)}.html`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-  showToast('PDF exported');
-}
-
-function generatePDFHTML() {
-  const totalExp = expenses ? (expenses.rent || 0) + (expenses.salary || 0) + (expenses.gas || 0) + (expenses.electricity || 0) : 0;
-  const plates = settings ? (settings.expected_plates || 500) : 500;
-  const margin = settings ? (settings.profit_margin || 30) : 30;
-  
-  const rows = recipes.map(rec => {
-    const p = calcDishPricing(rec);
-    return `<tr style="border-bottom:1px solid #ddd"><td style="padding:12px;text-align:left">${esc(rec.dish_name)}</td><td style="padding:12px;text-align:right">LKR${p.recipeCost.toFixed(0)}</td><td style="padding:12px;text-align:right">LKR${p.overhead.toFixed(0)}</td><td style="padding:12px;text-align:right">LKR${p.finalCost.toFixed(0)}</td><td style="padding:12px;text-align:right;font-weight:bold;color:#2c5282">LKR${p.sellingPrice.toFixed(0)}</td><td style="padding:12px;text-align:right;font-weight:bold;color:#22863a">LKR${p.profit.toFixed(0)}</td></tr>`;
+      </div>`;
   }).join('');
-
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>KYO Restaurant Price List</title><style>body{font-family:Arial,sans-serif;margin:40px;background:#f5f5f5}.container{max-width:900px;margin:0 auto;background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}.header{text-align:center;margin-bottom:30px;border-bottom:3px solid #c9a96e;padding-bottom:20px}h1{color:#1a1215;margin:0;font-size:32px;font-weight:bold}h2{color:#c9a96e;margin:5px 0 0 0;font-size:14px;letter-spacing:2px}.subtitle{text-align:center;color:#666;margin:20px 0;font-size:13px}.summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:30px;padding:20px;background:#f9f9f9;border-radius:6px}.summary-item{text-align:center}.summary-label{color:#666;font-size:12px;text-transform:uppercase;font-weight:bold}.summary-value{font-size:20px;font-weight:bold;color:#2c3e50;margin-top:5px}table{width:100%;border-collapse:collapse;margin-bottom:30px}th{background:#2c3e50;color:#fff;padding:12px;text-align:left;font-weight:bold}td{padding:12px}tr:nth-child(even){background:#f9f9f9}.footer{border-top:1px solid #ddd;padding-top:20px;text-align:center;color:#999;font-size:12px}.settings-box{margin-top:20px;padding:15px;background:#f0f0f0;border-radius:6px;font-size:13px}.settings-box div{margin:5px 0}.label{color:#666;display:inline-block;min-width:150px;font-weight:bold}.credit{text-align:center;color:#999;font-size:11px;margin-top:15px;font-style:italic}</style></head><body><div class="container"><div class="header"><h1>🍣 KYO Restaurant</h1><h2>Price List</h2></div><p class="subtitle">Generated ${new Date().toLocaleDateString()}</p><div class="summary"><div class="summary-item"><div class="summary-label">Total Dishes</div><div class="summary-value">${recipes.length}</div></div><div class="summary-item"><div class="summary-label">Monthly Expenses</div><div class="summary-value">LKR${totalExp.toLocaleString()}</div></div><div class="summary-item"><div class="summary-label">Avg Profit</div><div class="summary-value" style="color:#22863a">LKR${(recipes.reduce((s,r) => s + calcDishPricing(r).profit, 0) / recipes.length).toFixed(0)}</div></div></div><table><thead><tr><th>Dish</th><th style="text-align:right">Recipe Cost</th><th style="text-align:right">Overhead</th><th style="text-align:right">Total Cost</th><th style="text-align:right">Selling Price</th><th style="text-align:right">Profit</th></tr></thead><tbody>${rows}</tbody></table><div class="settings-box"><div><span class="label">Plates/Month:</span> ${plates.toLocaleString()}</div><div><span class="label">Margin:</span> ${margin}%</div><div><span class="label">Rent:</span> LKR${(expenses?.rent || 0).toLocaleString()}</div></div><div class="footer"><p>Credit by VK</p><p class="credit">Generated VK by Restaurant Costing System</p></div></div></body></html>`;
 }
 
-function exportCSV() {
-  if (recipes.length === 0) { showToast('No dishes', 'error'); return; }
-  
-  let csv = 'Dish Name,Recipe Cost,Overhead,Total Cost,Selling Price,Profit,Margin %\n';
-  recipes.forEach(rec => {
-    const p = calcDishPricing(rec);
-    csv += `"${rec.dish_name.replace(/"/g, '""')}",${p.recipeCost.toFixed(2)},${p.overhead.toFixed(2)},${p.finalCost.toFixed(2)},${p.sellingPrice.toFixed(2)},${p.profit.toFixed(2)},${p.margin}\n`;
+/* ========== EXPORT: PDF (Kyo Restaurant Price List) ========== */
+window.exportPDF = () => {
+  if(!state.recipes.length) return toast('No dishes to export','err');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'pt', format:'a4' });
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+
+  // --- HEADER BAND ---
+  doc.setFillColor(26,22,19);
+  doc.rect(0,0,W,110,'F');
+  // Gold underline
+  doc.setFillColor(201,163,92);
+  doc.rect(0,110,W,3,'F');
+
+  // Logo stamp (crimson square with 京)
+  doc.setFillColor(184,50,42);
+  doc.roundedRect(40,30,54,54,6,6,'F');
+  doc.setTextColor(250,246,240);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(28);
+  doc.text('京', 67, 68, { align:'center' });
+
+  // Title
+  doc.setTextColor(250,246,240);
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22);
+  doc.text('KYO RESTAURANT', 110, 55);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(10);
+  doc.setTextColor(201,163,92);
+  doc.text('Official Price List  ·  お品書き', 110, 72);
+  doc.setTextColor(220,210,195);
+  doc.setFontSize(9);
+  const today = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  doc.text('Generated: '+today, 110, 88);
+
+  // Right side meta
+  doc.setTextColor(201,163,92);
+  doc.setFontSize(9);
+  doc.text('Currency: LKR', W-40, 55, { align:'right' });
+  doc.setTextColor(220,210,195);
+  doc.text('Margin: '+(Number(state.settings.margin)||0)+'%', W-40, 70, { align:'right' });
+  doc.text('Monthly Plates: '+(Number(state.settings.plates)||0).toLocaleString(), W-40, 85, { align:'right' });
+
+  // --- SUMMARY STRIP ---
+  const totalExp = getTotalExpenses();
+  const plates = Number(state.settings.plates)||0;
+  const overhead = plates>0 ? totalExp/plates : 0;
+  doc.setFillColor(244,237,225);
+  doc.rect(0,113,W,54,'F');
+  doc.setDrawColor(201,163,92);
+  doc.setLineWidth(0.5);
+  doc.line(40,167,W-40,167);
+
+  const boxes = [
+    { label:'Ingredients', val: state.ingredients.length.toString() },
+    { label:'Dishes', val: state.recipes.length.toString() },
+    { label:'Monthly Expenses', val:'LKR '+Math.round(totalExp).toLocaleString() },
+    { label:'Overhead / Plate', val:'LKR '+Math.round(overhead).toLocaleString() },
+  ];
+  const boxW = (W-80)/4;
+  boxes.forEach((b,i) => {
+    const x = 40 + i*boxW;
+    doc.setTextColor(120,100,80);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(7.5);
+    doc.text(b.label.toUpperCase(), x+8, 132);
+    doc.setTextColor(26,22,19);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text(b.val, x+8, 152);
   });
-  
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `restaurant_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-  showToast('CSV exported');
+
+  // --- TABLE ---
+  const rows = state.recipes.map((r,idx) => {
+    const c = calcDishNumbers(r);
+    return [
+      String(idx+1),
+      r.name||'',
+      r.category||'-',
+      'LKR '+c.ingCost.toFixed(2),
+      'LKR '+c.overhead.toFixed(2),
+      'LKR '+c.finalCost.toFixed(2),
+      'LKR '+c.sellPrice.toFixed(2),
+      'LKR '+c.profit.toFixed(2),
+    ];
+  });
+
+  doc.autoTable({
+    startY: 185,
+    head: [['#','Dish','Category','Ingredient','Overhead','Final Cost','Sell Price','Profit']],
+    body: rows,
+    theme: 'grid',
+    styles:{ font:'helvetica', fontSize:9, cellPadding:6, textColor:[26,22,19], lineColor:[220,210,195], lineWidth:0.3 },
+    headStyles:{ fillColor:[26,22,19], textColor:[250,246,240], fontStyle:'bold', fontSize:9, halign:'left' },
+    alternateRowStyles:{ fillColor:[250,246,240] },
+    columnStyles:{
+      0:{ cellWidth:26, halign:'center', textColor:[150,130,110] },
+      1:{ fontStyle:'bold' },
+      3:{ halign:'right' },4:{ halign:'right' },5:{ halign:'right', fontStyle:'bold' },
+      6:{ halign:'right', textColor:[184,50,42], fontStyle:'bold' },
+      7:{ halign:'right', textColor:[85,107,61], fontStyle:'bold' },
+    },
+    margin:{ left:40, right:40 },
+    didDrawPage: (data) => {
+      // Footer on each page
+      const pageH = doc.internal.pageSize.getHeight();
+      const pageW = doc.internal.pageSize.getWidth();
+      doc.setDrawColor(201,163,92);
+      doc.setLineWidth(0.5);
+      doc.line(40, pageH-38, pageW-40, pageH-38);
+      doc.setFont('helvetica','italic');
+      doc.setFontSize(8);
+      doc.setTextColor(120,100,80);
+      doc.text('Credit by  Generated by Restaurant Costing System', 40, pageH-22);
+      doc.text('Page '+doc.internal.getNumberOfPages(), pageW-40, pageH-22, { align:'right' });
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(150,130,110);
+      doc.text('Kyo Restaurant, pageW/2, pageH-22, { align:'center' });
+    }
+  });
+
+  const finalY = doc.lastAutoTable.finalY + 18;
+  if(finalY < H-80){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(10);
+    doc.setTextColor(26,22,19);
+    doc.text('Notes', 40, finalY);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(90,79,68);
+    const notes = [
+      '• All prices in Sri Lankan Rupees (LKR) and inclusive of calculated overhead.',
+      '• Overhead per plate = Total Monthly Expenses ÷ Expected Monthly Plates.',
+      '• Selling price = Final Cost × (1 + Margin%). Margin currently set at '+(Number(state.settings.margin)||0)+'%.',
+      '• Prepared for internal pricing reference. Subject to revision.',
+    ];
+    notes.forEach((t,i)=> doc.text(t, 40, finalY+14+(i*12)));
+  }
+
+  doc.save('Kyo_Restaurant_Price_List_'+new Date().toISOString().slice(0,10)+'.pdf');
+  toast('PDF exported');
+  closeModal('exportModal');
+};
+
+/* ========== EXPORT: EXCEL ========== */
+window.exportExcel = () => {
+  if(!state.recipes.length && !state.ingredients.length) return toast('Nothing to export','err');
+  const wb = XLSX.utils.book_new();
+
+  // Dishes sheet
+  const dishRows = state.recipes.map((r,idx) => {
+    const c = calcDishNumbers(r);
+    return {
+      '#': idx+1,
+      'Dish': r.name,
+      'Category': r.category||'',
+      'Ingredient Cost (LKR)': +c.ingCost.toFixed(2),
+      'Overhead (LKR)': +c.overhead.toFixed(2),
+      'Final Cost (LKR)': +c.finalCost.toFixed(2),
+      'Sell Price (LKR)': +c.sellPrice.toFixed(2),
+      'Profit (LKR)': +c.profit.toFixed(2),
+    };
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dishRows.length?dishRows:[{info:'No dishes'}]), 'Dishes');
+
+  // Ingredients
+  const ingRows = state.ingredients.map(i => ({ Name:i.name, Unit:i.unit||'', 'Price (LKR)': +(Number(i.price)||0).toFixed(2) }));
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(ingRows.length?ingRows:[{info:'No ingredients'}]), 'Ingredients');
+
+  // Expenses & Settings
+  const total = getTotalExpenses();
+  const plates = Number(state.settings.plates)||0;
+  const margin = Number(state.settings.margin)||0;
+  const overhead = plates>0? total/plates : 0;
+  const meta = [
+    { Item:'Rent', Amount: state.expenses.rent||0 },
+    { Item:'Salary', Amount: state.expenses.salary||0 },
+    { Item:'Gas', Amount: state.expenses.gas||0 },
+    { Item:'Electricity', Amount: state.expenses.electricity||0 },
+    { Item:'TOTAL MONTHLY EXPENSES', Amount: total },
+    { Item:'Monthly Plates', Amount: plates },
+    { Item:'Overhead / Plate', Amount: +overhead.toFixed(2) },
+    { Item:'Profit Margin (%)', Amount: margin },
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(meta), 'Expenses & Settings');
+
+  XLSX.writeFile(wb, 'Kyo_Restaurant_Report_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('Excel exported');
+  closeModal('exportModal');
+};
+
+/* ========== AI ASSISTANT (rule-based) ========== */
+const aiChat = $('#aiChat');
+function aiPush(text, who='bot'){
+  const el = document.createElement('div');
+  el.className = `max-w-[85%] px-3 py-2 rounded-2xl text-sm ${who==='user'?'ai-msg-user self-end':'ai-msg-bot self-start'}`;
+  el.innerHTML = text;
+  aiChat.appendChild(el);
+  aiChat.scrollTop = aiChat.scrollHeight;
+}
+window.aiAsk = q => {
+  $('#aiInput').value = q;
+  $('#aiForm').dispatchEvent(new Event('submit'));
+};
+$('#aiForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const q = $('#aiInput').value.trim();
+  if(!q) return;
+  aiPush(escapeHtml(q),'user');
+  $('#aiInput').value = '';
+  setTimeout(()=> aiPush(aiAnswer(q)), 250);
+});
+function aiAnswer(q){
+  const Q = q.toLowerCase();
+  if(!state.recipes.length && !Q.includes('margin') && !Q.includes('breakeven')) return 'Add some dishes first, then I can analyze profitability and pricing.';
+  const rows = state.recipes.map(r => ({ r, c: calcDishNumbers(r) }));
+
+  if(Q.includes('top') || Q.includes('highest') || Q.includes('best profit') || Q.includes('which dish')){
+    if(!rows.length) return 'No dishes yet.';
+    const top = [...rows].sort((a,b)=>b.c.profit-a.c.profit).slice(0,3);
+    return '🏆 Top profit dishes:<br>'+top.map((x,i)=>`<b>${i+1}. ${escapeHtml(x.r.name)}</b> — profit ${fmtLKR(x.c.profit)} (sell ${fmtLKR(x.c.sellPrice)})`).join('<br>');
+  }
+  if(Q.includes('lowest') || Q.includes('worst') || Q.includes('least')){
+    const low = [...rows].sort((a,b)=>a.c.profit-b.c.profit).slice(0,3);
+    return '⚠️ Lowest profit dishes:<br>'+low.map((x,i)=>`<b>${i+1}. ${escapeHtml(x.r.name)}</b> — profit ${fmtLKR(x.c.profit)}`).join('<br>');
+  }
+  if(Q.includes('expensive ingredient') || Q.includes('costly')){
+    if(!state.ingredients.length) return 'No ingredients yet.';
+    const top = [...state.ingredients].sort((a,b)=>(b.price||0)-(a.price||0)).slice(0,3);
+    return '💰 Most expensive ingredients:<br>'+top.map((i,idx)=>`<b>${idx+1}. ${escapeHtml(i.name)}</b> — ${fmtLKR(i.price)}/${escapeHtml(i.unit||'')}`).join('<br>');
+  }
+  if(Q.includes('margin') && (Q.includes('suggest') || Q.includes('recommend') || Q.includes('best'))){
+    const cur = Number(state.settings.margin)||0;
+    const avgCost = rows.length? rows.reduce((s,x)=>s+x.c.finalCost,0)/rows.length : 0;
+    const rec = avgCost > 800 ? 25 : avgCost > 400 ? 35 : 45;
+    return `💡 Current margin: <b>${cur}%</b>. For avg. final cost of ${fmtLKR(avgCost)}, a healthy margin is around <b>${rec}%</b>. Adjust in Settings.`;
+  }
+  if(Q.includes('breakeven') || Q.includes('break even')){
+    const total = getTotalExpenses();
+    if(!rows.length) return 'Add dishes to compute breakeven.';
+    const avgProfit = rows.reduce((s,x)=>s+x.c.profit,0)/rows.length;
+    if(avgProfit<=0) return 'Average profit is 0 or negative — increase margin or lower costs to achieve breakeven.';
+    const plates = Math.ceil(total / avgProfit);
+    return `📊 Monthly expenses: ${fmtLKR(total)}. Avg profit/plate: ${fmtLKR(avgProfit)}. You need to sell ≈ <b>${plates.toLocaleString()} plates/month</b> to cover overhead fully from profit.`;
+  }
+  if(Q.includes('summary') || Q.includes('overview')){
+    const totalExp = getTotalExpenses();
+    const plates = Number(state.settings.plates)||0;
+    const overhead = plates>0?totalExp/plates:0;
+    const avgSell = rows.length? rows.reduce((s,x)=>s+x.c.sellPrice,0)/rows.length : 0;
+    return `📋 <b>Summary</b><br>• Ingredients: ${state.ingredients.length}<br>• Dishes: ${state.recipes.length}<br>• Monthly expenses: ${fmtLKR(totalExp)}<br>• Overhead/plate: ${fmtLKR(overhead)}<br>• Margin: ${Number(state.settings.margin)||0}%<br>• Avg selling price: ${fmtLKR(avgSell)}`;
+  }
+  if(Q.includes('help')){
+    return 'Ask me about: top/lowest profit dishes, expensive ingredients, suggested margin, breakeven plates, or overall summary.';
+  }
+  return 'I can help with profit analysis, pricing suggestions, breakeven points and summaries. Try the suggestion chips above.';
 }
 
-// ===== UTIL =====
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f3d4eadb3a15137',t:'MTc3NzQ1NTIyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+/* ========== INLINE CONFIRM (no browser dialogs) ========== */
+function confirmInline(msg){
+  return new Promise(resolve => {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop open';
+    backdrop.style.zIndex = 200;
+    backdrop.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-head">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-red-100 text-red-600"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+            <div class="jp-serif font-bold text-lg">Confirm</div>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p class="text-sm mb-5">${escapeHtml(msg)}</p>
+          <div class="flex justify-end gap-2">
+            <button id="cancelBtn" class="btn btn-ghost">Cancel</button>
+            <button id="okBtn" class="btn btn-crimson">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(backdrop);
+    lucide.createIcons();
+    backdrop.querySelector('#cancelBtn').onclick = () => { backdrop.remove(); resolve(false); };
+    backdrop.querySelector('#okBtn').onclick = () => { backdrop.remove(); resolve(true); };
+    backdrop.addEventListener('click', e => { if(e.target===backdrop){ backdrop.remove(); resolve(false); }});
+  });
+}
+
+/* ========== HELPERS ========== */
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ========== INIT ========== */
+document.getElementById('year').textContent = new Date().getFullYear();
+addRecipeRow();
+lucide.createIcons();
+
+// Fallback status if Firebase doesn't connect in 6s
+setTimeout(()=>{
+  if(document.getElementById('fbDot').classList.contains('fb-load')){
+    setFbStatus('off');
+    toast('Firebase taking long — check connection','err');
+  }
+}, 6000);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f43d670d34b5132',t:'MTc3NzUyMzcwNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
